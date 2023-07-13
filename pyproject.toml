@@ -6,7 +6,7 @@ name = "fastperm"
 version = "0.1"
 authors = [
   { name="Dennis Christensen", email="author@example.com" },
-  { name="Per August Jarval Moen", email="author@example.com" }
+  { name="Per August Jarval Moen", email="pamoen@math.uio.no" }
 ]
 description = "FASTPERM"
 readme = "README.md"

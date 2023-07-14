@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling","numpy"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=58","numpy"]
+build-backend = "setuptools.build_meta"
 [project]
 name = "fastperm"
 version = "0.1"

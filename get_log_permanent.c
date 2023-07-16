@@ -330,15 +330,72 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 }
 
 
+
+static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
+//(SEXP XSEXP, SEXP aSEXP, SEXP bSEXP, SEXP nSEXP, SEXP TSEXP, SEXP debugSEXP){
+	
+
+	PyArrayObject* arrayo;
+
+	if (!PyArg_ParseTuple(args, "O!", &PyArray_Type, &arrayo)){
+        return NULL;
+  	}
+
+  	
+  	npy_intp ndim = PyArray_NDIM(arrayo);
+  	npy_intp * shape = PyArray_SHAPE(arrayo);
+
+  	npy_intp totsize=1;
+
+  	for (int i = 0; i < ndim; ++i)
+  	{
+  		totsize = totsize * shape[i];
+  	}
+
+  	
+
+    double *array = PyArray_DATA(arrayo);
+    
+    // find max
+    
+    double maxval = array[0];
+
+    for (int i = 1; i < totsize; ++i)
+    {
+    	if(array[i]>maxval){
+    		maxval = array[i];
+    	}
+    }
+
+    double exp_result = 0;
+
+
+
+	for (int i = 0; i < totsize; ++i)
+	{
+		/*if(array[i]<0){
+			continue;
+		}*/
+
+		exp_result += exp(array[i] - maxval);
+	}
+
+	////printf("res = %f\n", (maxval + log(exp_result)));
+	return PyFloat_FromDouble(maxval + log(exp_result));
+
+}
+
+
 static PyMethodDef fastpermMethods[] = {
   {"get_log_permanents", C_get_log_permanents, METH_VARARGS, "Function for computing log permanents"},
+  {"log_sum_exp", log_sum_exp, METH_VARARGS, "Computes log sum exp of an array"},
   {NULL, NULL, 0, NULL}
 };
 
 static struct PyModuleDef fastperm = {
   PyModuleDef_HEAD_INIT,
   "fastperm",
-  "Custom fastperm module",
+  "Module for computing permanents of a block rectangular matrix",
   -1,
   fastpermMethods
 };
@@ -358,7 +415,5 @@ int nonzero_perm(double * x, double * a, double * b, int n){
 		}
 	}
 	return 1;
-
-
 
 }

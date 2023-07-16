@@ -45,6 +45,7 @@ void print_int_vector(int ,  int * );
 void print_float_vector(int ,  double * );
 
 static PyObject *C_get_log_permanents(PyObject *, PyObject *);
+static PyObject *log_sum_exp(PyObject *, PyObject *);
 
 double Clog_sum_exp(double * , int, double );
 double Csparse_log_sum_exp(dictionary *);

@@ -61,7 +61,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
   	//printf("fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
   	if(PyArray_IS_F_CONTIGUOUS(Xo)){
   		if(debug){
-  			printf("Fortran style memory layout detected. Transforming to C style.\n");
+  			fprintf(stdout,"Fortran style memory layout detected. Transforming to C style.\n");
   		}
   		Xo = (PyArrayObject *)PyArray_CastToType(Xo, PyArray_DESCR(Xo), 0);
   	}

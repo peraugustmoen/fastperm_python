@@ -58,17 +58,17 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
   		PyErr_SetString(PyExc_ValueError, "X must be T x n");
   		return NULL;
   	}
-  	//printf("fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
+  	//fprintf(stdout,"fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
   	if(PyArray_IS_F_CONTIGUOUS(Xo)){
   		if(debug){
   			fprintf(stdout,"Fortran style memory layout detected. Transforming to C style.\n");
   		}
   		Xo = (PyArrayObject *)PyArray_CastToType(Xo, PyArray_DESCR(Xo), 0);
   	}
-  	//printf("fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
+  	//fprintf(stdout,"fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
 
   	if(debug){
-  		printf("dim(X)[0] = %d, dim(X)[1] = %d\n", (int)shapeX[0], (int)shapeX[1]);
+  		fprintf(stdout,"dim(X)[0] = %d, dim(X)[1] = %d\n", (int)shapeX[0], (int)shapeX[1]);
 
   	}
   	
@@ -146,16 +146,16 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 	for (int t = 0; t < T; ++t)
 	{
-		//printf("t = %d\n",t);
+		//fprintf(stdout,"t = %d\n",t);
 		//double * x = X + (t*n);
 		double * x = &(X[t*n]);
 		
 		
 		/*if(t ==0){
-			printf("x[0] = %f, x[1] = %f, x[n] = %f\n", x[0], x[1], x[n-1]);
+			fprintf(stdout,"x[0] = %f, x[1] = %f, x[n] = %f\n", x[0], x[1], x[n-1]);
 		}*/
 
-		//printf("x[0] = %f, x[1] = %f, x[n] = %f\n", x[0], x[1], x[n-1]);
+		//fprintf(stdout,"x[0] = %f, x[1] = %f, x[n] = %f\n", x[0], x[1], x[n-1]);
 		if(!nonzero_perm(x, a,  b, n)){
 			logperms[t] = -1;
 			continue;
@@ -171,25 +171,25 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 
 	    if(debug){
-	    	printf("T=%d, t=%d\n", T, t);
-	    	printf("len_a_union_b = %d\n", len_a_union_b);
-	    	printf("x:\n");
+	    	fprintf(stdout,"T=%d, t=%d\n", T, t);
+	    	fprintf(stdout,"len_a_union_b = %d\n", len_a_union_b);
+	    	fprintf(stdout,"x:\n");
 	    	print_float_vector(n,x);
-	    	printf("a:\n");
+	    	fprintf(stdout,"a:\n");
 	    	print_float_vector(n,a);
-	    	printf("b:\n");
+	    	fprintf(stdout,"b:\n");
 	    	print_float_vector(n,b);
-	    	printf("a_union_b:\n");
+	    	fprintf(stdout,"a_union_b:\n");
 	    	print_float_vector(2*n,a_union_b);
-	    	printf("len a_union_b:%d\n", len_a_union_b);
-	    	printf("alpha:\n");
+	    	fprintf(stdout,"len a_union_b:%d\n", len_a_union_b);
+	    	fprintf(stdout,"alpha:\n");
 	    	print_int_vector(n,  alpha);
-	    	printf("beta:\n");
+	    	fprintf(stdout,"beta:\n");
 	    	print_int_vector(n,  beta);
-	    	printf("gamma:\n");
+	    	fprintf(stdout,"gamma:\n");
 	    	print_int_vector(n,  gamma);
-	    	printf("m:%d\n", *m);
-	    	printf("k:%d\n", *k);
+	    	fprintf(stdout,"m:%d\n", *m);
+	    	fprintf(stdout,"k:%d\n", *k);
 	    	
 	    }
 
@@ -201,7 +201,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 
 		if(debug){
-			printf("REDUCING NOW\n");
+			fprintf(stdout,"REDUCING NOW\n");
 		}
 		
 		//return(XSEXP);
@@ -210,7 +210,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 		if(result != 0){
 
-			printf("Error recorded, rerunning and returning NULL");
+			fprintf(stdout,"Error recorded, rerunning and returning NULL");
 
 			memset(alpha, 0, sizeof(int)*n);
 			memset(beta, 0, sizeof(int)*n);
@@ -223,24 +223,24 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 
 		    if(debug){
-		    	printf("len_a_union_b = %d\n", len_a_union_b);
-		    	printf("x:\n");
+		    	fprintf(stdout,"len_a_union_b = %d\n", len_a_union_b);
+		    	fprintf(stdout,"x:\n");
 		    	print_float_vector(n,x);
-		    	printf("a:\n");
+		    	fprintf(stdout,"a:\n");
 		    	print_float_vector(n,a);
-		    	printf("b:\n");
+		    	fprintf(stdout,"b:\n");
 		    	print_float_vector(n,b);
-		    	printf("a_union_b:\n");
+		    	fprintf(stdout,"a_union_b:\n");
 		    	print_float_vector(2*n,a_union_b);
-		    	printf("len a_union_b:%d\n", len_a_union_b);
-		    	printf("alpha:\n");
+		    	fprintf(stdout,"len a_union_b:%d\n", len_a_union_b);
+		    	fprintf(stdout,"alpha:\n");
 		    	print_int_vector(n,  alpha);
-		    	printf("beta:\n");
+		    	fprintf(stdout,"beta:\n");
 		    	print_int_vector(n,  beta);
-		    	printf("gamma:\n");
+		    	fprintf(stdout,"gamma:\n");
 		    	print_int_vector(n,  gamma);
-		    	printf("m:%d\n", *m);
-		    	printf("k:%d\n", *k);
+		    	fprintf(stdout,"m:%d\n", *m);
+		    	fprintf(stdout,"k:%d\n", *k);
 		    	
 		    }
 
@@ -252,7 +252,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 
 			if(debug){
-				printf("REDUCING NOW\n");
+				fprintf(stdout,"REDUCING NOW\n");
 			}
 			
 			//return(XSEXP);
@@ -268,13 +268,13 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 		}
 
 		if(debug){
-			printf("history len = %d\n", history_len);
+			fprintf(stdout,"history len = %d\n", history_len);
 
-			printf("REDUCED SUBPERMS\n");
+			fprintf(stdout,"REDUCED SUBPERMS\n");
 		}
 		sparse_get_reduced_log_subperms( new_log_subperms,  alpha, beta, gamma,
 						log_factorials, n,  m, k);
-		//printf("RESULT:\n");
+		//fprintf(stdout,"RESULT:\n");
 		//print_matrix(n+1, n+1, new_log_subperms);
 
 		dictionary * tmp  = old_log_subperms;
@@ -284,10 +284,10 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 
 		if(debug){
-			printf("==========\nReverse reduction:\n==========\n");
+			fprintf(stdout,"==========\nReverse reduction:\n==========\n");
 		}
-		//printf("old = %d\n", old_log_subperms);
-		//printf("new = %d\n", new_log_subperms);
+		//fprintf(stdout,"old = %d\n", old_log_subperms);
+		//fprintf(stdout,"new = %d\n", new_log_subperms);
 		dictionary * the_log_subperms = sparse_reverse_reduction(old_log_subperms, new_log_subperms, alpha,
 						   beta,  gamma, m,  n, k,  history,
 				           amount_history, &history_len, log_factorials);
@@ -299,7 +299,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 		double logperm =  Csparse_log_sum_exp(the_log_subperms);
 		logperms[t] = logperm;
 		if(debug){
-			printf("logperm = %f\n", logperm);
+			fprintf(stdout,"logperm = %f\n", logperm);
 
 		}
 

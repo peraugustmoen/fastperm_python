@@ -194,7 +194,7 @@ void sparse_reverse_lm(dictionary * old_log_subperms,  dictionary * new_log_subp
 			log_lower4b = log_factorials[r];
 			/*if(z<10){
 				end = clock();
-				printf("used %f clock cycles for computing loglowerupperosv\n", ((double) (end - start)));
+				fprintf(stdout,"used %f clock cycles for computing loglowerupperosv\n", ((double) (end - start)));
 			}*/	
 			new_value = log_upper1 + log_upper2 - log_upper3 + log_upper4
  								- log_lower1 - log_lower2 + log_lower3
@@ -206,7 +206,7 @@ void sparse_reverse_lm(dictionary * old_log_subperms,  dictionary * new_log_subp
  			update_dict(new_pair, new_value, new_log_subperms);
  			/*if(z<10){
 				end = clock();
-				printf("used %f clock cycles for update\n", ((double) (end - start)));
+				fprintf(stdout,"used %f clock cycles for update\n", ((double) (end - start)));
 			}	*/
 		}
 
@@ -302,7 +302,7 @@ void sparse_reverse_bs(dictionary * old_log_subperms,  dictionary * new_log_subp
 						   log_lower3a - log_lower3b + value;
 			/*if(z<10){
 				end = clock();
-				printf("used %f clock cycles for computing loglowerupperosv\n", ((double) (end - start)));
+				fprintf(stdout,"used %f clock cycles for computing loglowerupperosv\n", ((double) (end - start)));
 			}*/	
 		
  			new_pair.y = s;
@@ -312,7 +312,7 @@ void sparse_reverse_bs(dictionary * old_log_subperms,  dictionary * new_log_subp
  			update_dict(new_pair, new_value, new_log_subperms);
  			/*if(z<10){
 				end = clock();
-				printf("used %f clock cycles for update\n", ((double) (end - start)));
+				fprintf(stdout,"used %f clock cycles for update\n", ((double) (end - start)));
 			}*/
 		}
 	}
@@ -543,7 +543,7 @@ void sparse_get_reduced_log_subperms(dictionary * new_log_subperms, int * alpha,
 		add_to_dictionary(new_log_subperms, new_pair, new_value);
 	}
 	else{
-		//printf("Error in get_reduced_log_subperms! None of the four cases match the given arguments");
+		//fprintf(stdout,"Error in get_reduced_log_subperms! None of the four cases match the given arguments");
 	}
 }
 
@@ -561,13 +561,13 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 
 	for (int i =((*history_len)-1); i>=0; --i)
 	{
-		//printf("i = %d\n",i);
-		//printf("old_subperms_len = %d\n", (*old_log_subperms).used_len);
-		//printf("old_subperms_maxsize = %d\n", (*old_log_subperms).table_size);
-		//printf("fraction =  %f\n",  ((double )(*old_log_subperms).used_len) / ((double) (n+1)*(n+1)));
+		//fprintf(stdout,"i = %d\n",i);
+		//fprintf(stdout,"old_subperms_len = %d\n", (*old_log_subperms).used_len);
+		//fprintf(stdout,"old_subperms_maxsize = %d\n", (*old_log_subperms).table_size);
+		//fprintf(stdout,"fraction =  %f\n",  ((double )(*old_log_subperms).used_len) / ((double) (n+1)*(n+1)));
 		if(history[i]==0){
 			// reverse top trim
-			//printf("Reverse top trim!\n");
+			//fprintf(stdout,"Reverse top trim!\n");
 			amount = amount_history[2*i];
 			sparse_reverse_tt(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -575,7 +575,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 		}
 		else if(history[i] ==1){
 			// reverse bottom split
-			//printf("Reverse bottom split!\n");
+			//fprintf(stdout,"Reverse bottom split!\n");
 			amount = amount_history[2*i];
 			sparse_reverse_bs(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -584,7 +584,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 
 		else if(history[i]==2){
 			// reverse left merge
-			//printf("Reverse left merge!\n");
+			//fprintf(stdout,"Reverse left merge!\n");
 			amount = amount_history[2*i];
 			amount2 = amount_history[2*i+1];
 			sparse_reverse_lm(old_log_subperms, new_log_subperms, amount, amount2,
@@ -594,7 +594,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 
 		else if(history[i]==3){
 			// reverse bottom trim
-			//printf("Reverse bottom trim!\n");
+			//fprintf(stdout,"Reverse bottom trim!\n");
 			amount = amount_history[2*i];
 			sparse_reverse_bt(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -602,7 +602,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 		}
 		else if(history[i]==4){
 			// reverse top split
-			//printf("Reverse top split!\n");
+			//fprintf(stdout,"Reverse top split!\n");
 			amount = amount_history[2*i];
 			sparse_reverse_ts(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -610,21 +610,21 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 		}
 		else if(history[i]==5){
 			// reverse right merge
-			//printf("Reverse right merge!\n");
+			//fprintf(stdout,"Reverse right merge!\n");
 			amount = amount_history[2*i];
 			amount2 = amount_history[2*i+1];
 			sparse_reverse_rm(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
 				k);
 		}
-		////printf("old = %d\n", old_log_subperms);
-		////printf("new = %d\n", new_log_subperms);
-		//printf("historyindex = %d\n", i);
-		//printf("amount = %d\n", amount);
-		////printf("Result:\n");
-		////printf("Old:\n");
+		////fprintf(stdout,"old = %d\n", old_log_subperms);
+		////fprintf(stdout,"new = %d\n", new_log_subperms);
+		//fprintf(stdout,"historyindex = %d\n", i);
+		//fprintf(stdout,"amount = %d\n", amount);
+		////fprintf(stdout,"Result:\n");
+		////fprintf(stdout,"Old:\n");
 		//print_matrix(n+1,n+1,old_log_subperms);		
-		////printf("New:\n");
+		////fprintf(stdout,"New:\n");
 		//print_matrix(n+1,n+1,new_log_subperms);
 
 		tmp  = old_log_subperms;
@@ -632,7 +632,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 		new_log_subperms = tmp;
 	}
 	//print_matrix((n+1),(n+1), old_log_subperms);
-	////printf("\n");
+	////fprintf(stdout,"\n");
 	//print_matrix((n+1),(n+1), new_log_subperms);
 
 	return old_log_subperms;
@@ -650,7 +650,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 		new_log_subperms[i]=-1;
 // 	}
 // 
-// 	////printf("HEIIII\n");
+// 	////fprintf(stdout,"HEIIII\n");
 // 	double log_upper1=0;
 // 	double log_upper2=0;
 // 	double log_upper3=0;
@@ -663,9 +663,9 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 	double maxval = -1;
 // 	int lstart = 0;
 // 
-// 	////printf("alphas = ");
+// 	////fprintf(stdout,"alphas = ");
 // 	//print_int_vector(n,alpha);
-// 	////printf("n - alpha[0] - alpha[k-1] = %d\n",n - alpha[0] - alpha[(*k)-1]  );
+// 	////fprintf(stdout,"n - alpha[0] - alpha[k-1] = %d\n",n - alpha[0] - alpha[(*k)-1]  );
 // 	for (int r = 0; r <= alpha[0]; ++r)
 // 	{
 // 		for (int s = MAX(0, (*m + amount) +alpha[0] + alpha[(*k)-1]-n-r); s<= alpha[(*k)-1]; ++s)
@@ -675,16 +675,16 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 			for (int l = lstart; l <= s; ++l)
 // 			{
 // 
-// 				////printf("r = %d, s = %d, l = %d\n", r,s,l);
+// 				////fprintf(stdout,"r = %d, s = %d, l = %d\n", r,s,l);
 // 
 // 				if(r == 1 && s == 1){
-// 					////printf("hit r=1, s=1, l=%d!\n", l);
-// 					////printf("old_log_subperms[r,l] = %f\n", old_log_subperms[cord_spec(r,l,(n+1))]);
+// 					////fprintf(stdout,"hit r=1, s=1, l=%d!\n", l);
+// 					////fprintf(stdout,"old_log_subperms[r,l] = %f\n", old_log_subperms[cord_spec(r,l,(n+1))]);
 // 
 // 				}
 // 
 // 				if(old_log_subperms[cord_spec(r,l,(n+1))] < 0 ){
-// 					////printf("SKIPPED\n");
+// 					////fprintf(stdout,"SKIPPED\n");
 // 					temp_vec[l-lstart] = -1;
 // 					continue;
 // 				}
@@ -705,13 +705,13 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 							   log_lower3a - log_lower3b + old_log_subperms[cord_spec(r,l,(n+1))];
 // 
 // 				if(r==1 && s==1){
-// 					////printf("log_upper1 = %f\n", log_upper1);
-// 					////printf("log_upper2 = %f\n", log_upper2);
-// 					////printf("log_upper3 = %f\n", log_upper3);
-// 					////printf("log_lower1 = %f\n", log_lower1);
-// 					////printf("log_lower2 = %f\n", log_lower2);
-// 					////printf("log_lower3a = %f\n", log_lower3a);
-// 					////printf("log_lower3b = %f\n", log_lower3b);
+// 					////fprintf(stdout,"log_upper1 = %f\n", log_upper1);
+// 					////fprintf(stdout,"log_upper2 = %f\n", log_upper2);
+// 					////fprintf(stdout,"log_upper3 = %f\n", log_upper3);
+// 					////fprintf(stdout,"log_lower1 = %f\n", log_lower1);
+// 					////fprintf(stdout,"log_lower2 = %f\n", log_lower2);
+// 					////fprintf(stdout,"log_lower3a = %f\n", log_lower3a);
+// 					////fprintf(stdout,"log_lower3b = %f\n", log_lower3b);
 // 
 // 				}
 // 
@@ -851,10 +851,10 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 		maxval=-1;
 // 		for (int l = r; l <= (r+amount2); ++l)
 // 		{
-// 			////printf("r = %d, s = %d, l = %d\n",r,s,l);
+// 			////fprintf(stdout,"r = %d, s = %d, l = %d\n",r,s,l);
 // 			if(old_log_subperms[cord_spec(l,s,(n+1))] < 0 ){
 // 				temp_vec[l-r] = -1;
-// 				////printf("skipping!\n");
+// 				////fprintf(stdout,"skipping!\n");
 // 				continue;
 // 				}
 // 
@@ -1068,7 +1068,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 		new_log_subperms[cord_spec(0,0,(n+1))] = log_factorials[alpha[1]] - log_factorials[alpha[1]-(*m)];
 // 	}
 // 	else{
-// 		//printf("Error in get_reduced_log_subperms! None of the four cases match the given arguments");
+// 		//fprintf(stdout,"Error in get_reduced_log_subperms! None of the four cases match the given arguments");
 // 	}
 // }
 // 
@@ -1139,20 +1139,20 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 			(*m) = (*m)-beta[0];
 // 			beta[0]=0;
 // 			historycounter++;
-// 			//printf("TOP TRIM ->\n");
+// 			//fprintf(stdout,"TOP TRIM ->\n");
 // 			//print_int_vector(n, beta);
-// 			//printf("=====\n");
-// 			//printf("alpha:\n");
+// 			//fprintf(stdout,"=====\n");
+// 			//fprintf(stdout,"alpha:\n");
 // 			print_int_vector(n, alpha);
-// 			//printf("beta:\n");
+// 			//fprintf(stdout,"beta:\n");
 // 			print_int_vector(n, beta);
-// 			//printf("gamma:\n");
+// 			//fprintf(stdout,"gamma:\n");
 // 			print_int_vector(n, gamma);
-// 			//printf("m:\n");
+// 			//fprintf(stdout,"m:\n");
 // 			print_int_vector(1, m);
-// 			//printf("k:\n");
+// 			//fprintf(stdout,"k:\n");
 // 			print_int_vector(1, k);
-// 			//printf("=====\n");
+// 			//fprintf(stdout,"=====\n");
 // 			if(check_if_reduced(alpha, beta, gamma, 
 // 					  m, k)){break;}
 // 
@@ -1164,20 +1164,20 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 			(*m) = (*m) - gamma[0];
 // 			gamma[0] = 0;
 // 			historycounter++;
-// 			//printf("BOTTOM SPLIT ->\n");
+// 			//fprintf(stdout,"BOTTOM SPLIT ->\n");
 // 			//print_int_vector(n, beta);
-// 			//printf("=====\n");
-// 			//printf("alpha:\n");
+// 			//fprintf(stdout,"=====\n");
+// 			//fprintf(stdout,"alpha:\n");
 // 			print_int_vector(n, alpha);
-// 			//printf("beta:\n");
+// 			//fprintf(stdout,"beta:\n");
 // 			print_int_vector(n, beta);
-// 			//printf("gamma:\n");
+// 			//fprintf(stdout,"gamma:\n");
 // 			print_int_vector(n, gamma);
-// 			//printf("m:\n");
+// 			//fprintf(stdout,"m:\n");
 // 			print_int_vector(1, m);
-// 			//printf("k:\n");
+// 			//fprintf(stdout,"k:\n");
 // 			print_int_vector(1, k);
-// 			//printf("=====\n");
+// 			//fprintf(stdout,"=====\n");
 // 			if(check_if_reduced(alpha, beta, gamma, 
 // 					  m, k)){break;}
 // 		}
@@ -1202,20 +1202,20 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 			}
 // 			(*k)--;
 // 			historycounter++;
-// 			//printf("LEFT MERGE ->\n");
+// 			//fprintf(stdout,"LEFT MERGE ->\n");
 // 			//print_int_vector(n, beta);
-// 			//printf("=====\n");
-// 			//printf("alpha:\n");
+// 			//fprintf(stdout,"=====\n");
+// 			//fprintf(stdout,"alpha:\n");
 // 			print_int_vector(n, alpha);
-// 			//printf("beta:\n");
+// 			//fprintf(stdout,"beta:\n");
 // 			print_int_vector(n, beta);
-// 			//printf("gamma:\n");
+// 			//fprintf(stdout,"gamma:\n");
 // 			print_int_vector(n, gamma);
-// 			//printf("m:\n");
+// 			//fprintf(stdout,"m:\n");
 // 			print_int_vector(1, m);
-// 			//printf("k:\n");
+// 			//fprintf(stdout,"k:\n");
 // 			print_int_vector(1, k);
-// 			//printf("=====\n");
+// 			//fprintf(stdout,"=====\n");
 // 			if(check_if_reduced(alpha, beta, gamma, 
 // 					  m, k)){break;}
 // 		}		
@@ -1232,20 +1232,20 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 			(*m) = (*m) - gamma[(*k)-2];
 // 			gamma[(*k)-2]=0;
 // 			historycounter++;
-// 			//printf("BOTTOM TRIM ->\n");
+// 			//fprintf(stdout,"BOTTOM TRIM ->\n");
 // 			//print_int_vector(n, beta);
-// 			//printf("=====\n");
-// 			//printf("alpha:\n");
+// 			//fprintf(stdout,"=====\n");
+// 			//fprintf(stdout,"alpha:\n");
 // 			print_int_vector(n, alpha);
-// 			//printf("beta:\n");
+// 			//fprintf(stdout,"beta:\n");
 // 			print_int_vector(n, beta);
-// 			//printf("gamma:\n");
+// 			//fprintf(stdout,"gamma:\n");
 // 			print_int_vector(n, gamma);
-// 			//printf("m:\n");
+// 			//fprintf(stdout,"m:\n");
 // 			print_int_vector(1, m);
-// 			//printf("k:\n");
+// 			//fprintf(stdout,"k:\n");
 // 			print_int_vector(1, k);
-// 			//printf("=====\n");
+// 			//fprintf(stdout,"=====\n");
 // 			if(check_if_reduced(alpha, beta, gamma, 
 // 					  m, k)){break;}
 // 		}
@@ -1257,20 +1257,20 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 			(*m) = (*m) - beta[(*k)-2];
 // 			beta[(*k)-2]=0;
 // 			historycounter++;
-// 			//printf("TOP SPLIT ->\n");
+// 			//fprintf(stdout,"TOP SPLIT ->\n");
 // 			//print_int_vector(n, beta);
-// 			//printf("=====\n");
-// 			//printf("alpha:\n");
+// 			//fprintf(stdout,"=====\n");
+// 			//fprintf(stdout,"alpha:\n");
 // 			print_int_vector(n, alpha);
-// 			//printf("beta:\n");
+// 			//fprintf(stdout,"beta:\n");
 // 			print_int_vector(n, beta);
-// 			//printf("gamma:\n");
+// 			//fprintf(stdout,"gamma:\n");
 // 			print_int_vector(n, gamma);
-// 			//printf("m:\n");
+// 			//fprintf(stdout,"m:\n");
 // 			print_int_vector(1, m);
-// 			//printf("k:\n");
+// 			//fprintf(stdout,"k:\n");
 // 			print_int_vector(1, k);
-// 			//printf("=====\n");
+// 			//fprintf(stdout,"=====\n");
 // 			if(check_if_reduced(alpha, beta, gamma, 
 // 					  m, k)){break;}
 // 		}
@@ -1286,20 +1286,20 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 			(*k)--;
 // 
 // 			historycounter++;
-// 			//printf("RIGHT MERGE ->\n");
+// 			//fprintf(stdout,"RIGHT MERGE ->\n");
 // 			//print_int_vector(n, beta);
-// 			//printf("=====\n");
-// 			//printf("alpha:\n");
+// 			//fprintf(stdout,"=====\n");
+// 			//fprintf(stdout,"alpha:\n");
 // 			print_int_vector(n, alpha);
-// 			//printf("beta:\n");
+// 			//fprintf(stdout,"beta:\n");
 // 			print_int_vector(n, beta);
-// 			//printf("gamma:\n");
+// 			//fprintf(stdout,"gamma:\n");
 // 			print_int_vector(n, gamma);
-// 			//printf("m:\n");
+// 			//fprintf(stdout,"m:\n");
 // 			print_int_vector(1, m);
-// 			//printf("k:\n");
+// 			//fprintf(stdout,"k:\n");
 // 			print_int_vector(1, k);
-// 			//printf("=====\n");
+// 			//fprintf(stdout,"=====\n");
 // 			if(check_if_reduced(alpha, beta, gamma, 
 // 					  m, k)){break;}
 // 		}		
@@ -1309,7 +1309,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 
 // 	}
 // 
-// 	//printf("Terminated at iter %d\n", cc);
+// 	//fprintf(stdout,"Terminated at iter %d\n", cc);
 // 	
 // 	*history_len = historycounter;
 // }
@@ -1332,7 +1332,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 		
 // 		if(history[i]==0){
 // 			// reverse top trim
-// 			//printf("Reverse top trim!\n");
+// 			//fprintf(stdout,"Reverse top trim!\n");
 // 			amount = amount_history[2*i];
 // 			reverse_tt(old_log_subperms, new_log_subperms, amount, amount2,
 // 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -1340,7 +1340,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 		}
 // 		else if(history[i] ==1){
 // 			// reverse bottom split
-// 			//printf("Reverse bottom split!\n");
+// 			//fprintf(stdout,"Reverse bottom split!\n");
 // 			amount = amount_history[2*i];
 // 			reverse_bs(old_log_subperms, new_log_subperms, amount, amount2,
 // 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -1349,7 +1349,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 
 // 		else if(history[i]==2){
 // 			// reverse left merge
-// 			//printf("Reverse left merge!\n");
+// 			//fprintf(stdout,"Reverse left merge!\n");
 // 			amount = amount_history[2*i];
 // 			amount2 = amount_history[2*i+1];
 // 			reverse_lm(old_log_subperms, new_log_subperms, amount, amount2,
@@ -1359,7 +1359,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 
 // 		else if(history[i]==3){
 // 			// reverse bottom trim
-// 			//printf("Reverse bottom trim!\n");
+// 			//fprintf(stdout,"Reverse bottom trim!\n");
 // 			amount = amount_history[2*i];
 // 			reverse_bt(old_log_subperms, new_log_subperms, amount, amount2,
 // 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -1367,7 +1367,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 		}
 // 		else if(history[i]==4){
 // 			// reverse top split
-// 			//printf("Reverse top split!\n");
+// 			//fprintf(stdout,"Reverse top split!\n");
 // 			amount = amount_history[2*i];
 // 			reverse_ts(old_log_subperms, new_log_subperms, amount, amount2,
 // 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -1375,21 +1375,21 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 		}
 // 		else if(history[i]==5){
 // 			// reverse right merge
-// 			//printf("Reverse right merge!\n");
+// 			//fprintf(stdout,"Reverse right merge!\n");
 // 			amount = amount_history[2*i];
 // 			amount2 = amount_history[2*i+1];
 // 			reverse_rm(old_log_subperms, new_log_subperms, amount, amount2,
 // 				alpha,  beta, gamma,log_factorials, n, m, 
 // 				temp_vec,k);
 // 		}
-// 		////printf("old = %d\n", old_log_subperms);
-// 		////printf("new = %d\n", new_log_subperms);
-// 		//printf("historyindex = %d\n", i);
-// 		//printf("amount = %d\n", amount);
-// 		////printf("Result:\n");
-// 		////printf("Old:\n");
+// 		////fprintf(stdout,"old = %d\n", old_log_subperms);
+// 		////fprintf(stdout,"new = %d\n", new_log_subperms);
+// 		//fprintf(stdout,"historyindex = %d\n", i);
+// 		//fprintf(stdout,"amount = %d\n", amount);
+// 		////fprintf(stdout,"Result:\n");
+// 		////fprintf(stdout,"Old:\n");
 // 		//print_matrix(n+1,n+1,old_log_subperms);		
-// 		////printf("New:\n");
+// 		////fprintf(stdout,"New:\n");
 // 		//print_matrix(n+1,n+1,new_log_subperms);
 // 
 // 		tmp  = old_log_subperms;
@@ -1397,7 +1397,7 @@ dictionary* sparse_reverse_reduction(dictionary * old_log_subperms, dictionary *
 // 		new_log_subperms = tmp;
 // 	}
 // 	//print_matrix((n+1),(n+1), old_log_subperms);
-// 	////printf("\n");
+// 	////fprintf(stdout,"\n");
 // 	//print_matrix((n+1),(n+1), new_log_subperms);
 // 
 // 	return old_log_subperms;

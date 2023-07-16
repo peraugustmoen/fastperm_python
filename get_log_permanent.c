@@ -20,19 +20,30 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 	if (!PyArg_ParseTuple(args, "O!O!O!iii", &PyArray_Type, &Xo,&PyArray_Type, &ao,&PyArray_Type, &bo, &n, &T,&debug)){
         return NULL;
   	}
-  	if (PyArray_NDIM(Xo)!= 2 || PyArray_NDIM(ao) != 1 || PyArray_NDIM(bo) != 1 || !PyArray_ISFLOAT(Xo) || !PyArray_ISFLOAT(ao) 
-  		|| !PyArray_ISFLOAT(bo)) {
-        PyErr_SetString(PyExc_ValueError, "arrays must be one-dimensional and of type float");
-    	/*printf("%d\n",PyArray_NDIM(Xo));
-    	printf("%d\n",PyArray_NDIM(ao));
-    	printf("%d\n",PyArray_NDIM(bo));
-    	printf("%d\n",PyArray_ISFLOAT(Xo));
-    	printf("%d\n",PyArray_ISFLOAT(ao));
-    	printf("%d\n",PyArray_ISFLOAT(bo));*/
 
-        return NULL;
-    }
+  	if(PyArray_NDIM(Xo)!= 2){
+  		if(T!=1){
+  			PyErr_SetString(PyExc_ValueError, "X must be 2-dimensional whenever T> 1");
+  			return NULL;
+  		}
+  	}
+  	if(!PyArray_ISFLOAT(Xo)){
+  		PyErr_SetString(PyExc_ValueError, "X must be of type float");
+  		return NULL;
 
+  	}
+  	if( PyArray_NDIM(ao) != 1 || !PyArray_ISFLOAT(ao) ){
+  		PyErr_SetString(PyExc_ValueError, "a must be one-dimensional and of type float");
+  		return NULL;
+  	}
+  	if( PyArray_NDIM(bo) != 1 || !PyArray_ISFLOAT(bo) ){
+  		PyErr_SetString(PyExc_ValueError, "b must be one-dimensional and of type float");
+  		return NULL;
+  	}
+
+  	npy_intp * shapeX = PyArray_SHAPE(Xo);
+
+  	printf("dim(X)[0] = %d, dim(X)[1] = %d\n", (int)shapeX[0], (int)shapeX[1]);
 
     double *X = PyArray_DATA(Xo);
     double *a = PyArray_DATA(ao);

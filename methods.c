@@ -62,21 +62,21 @@ void reverse_bt(double * old_log_subperms, double * new_log_subperms, int amount
 
 		for (int s = amount; s <= alpha[*k-1]; ++s)
 		{
-			////fprintf(stdout,"r = %d, s = %d!\n", r, s);
+			////printf("r = %d, s = %d!\n", r, s);
 			if(old_log_subperms[cord_spec(r,s-amount, (n+1))]<0){
 				new_log_subperms[cord_spec(r,s, (n+1))] = -1;
-				////fprintf(stdout,"skipping!\n");
+				////printf("skipping!\n");
 				continue;
 			}
 			double log_upper = log_factorials[(alpha[(*k)-1] - s + amount)];
 			double log_lower = log_factorials[alpha[(*k)-1] - s];
-			////fprintf(stdout,"alpha[(*k)-1] = %d\n", alpha[(*k)-1]);
-			////fprintf(stdout,"s = %d\n", s);
-			////fprintf(stdout,"amount = %d\n", amount);
-			////fprintf(stdout,"alpha[(*k)-1] - s + amount = %d\n", alpha[(*k)-1] - s + amount);
-			////fprintf(stdout,"log_factorials[2]=%f\n", log_factorials[2]);
-			////fprintf(stdout,"log_upper = %f\n", log_upper);
-			////fprintf(stdout,"log_lower = %f\n", log_lower);
+			////printf("alpha[(*k)-1] = %d\n", alpha[(*k)-1]);
+			////printf("s = %d\n", s);
+			////printf("amount = %d\n", amount);
+			////printf("alpha[(*k)-1] - s + amount = %d\n", alpha[(*k)-1] - s + amount);
+			////printf("log_factorials[2]=%f\n", log_factorials[2]);
+			////printf("log_upper = %f\n", log_upper);
+			////printf("log_lower = %f\n", log_lower);
 
 
 			new_log_subperms[cord_spec(r,s, (n+1))] = log_upper - log_lower + old_log_subperms[cord_spec(r,s-amount, (n+1))];
@@ -103,7 +103,7 @@ void reverse_bs(double * old_log_subperms, double * new_log_subperms, int amount
 		new_log_subperms[i]=-1;
 	}
 
-	////fprintf(stdout,"HEIIII\n");
+	////printf("HEIIII\n");
 	double log_upper1=0;
 	double log_upper2=0;
 	double log_upper3=0;
@@ -116,9 +116,9 @@ void reverse_bs(double * old_log_subperms, double * new_log_subperms, int amount
 	double maxval = -1;
 	int lstart = 0;
 
-	////fprintf(stdout,"alphas = ");
+	////printf("alphas = ");
 	////print_int_vector(n,alpha);
-	////fprintf(stdout,"n - alpha[0] - alpha[k-1] = %d\n",n - alpha[0] - alpha[(*k)-1]  );
+	////printf("n - alpha[0] - alpha[k-1] = %d\n",n - alpha[0] - alpha[(*k)-1]  );
 	for (int r = 0; r <= alpha[0]; ++r)
 	{
 		for (int s = MAX(0, (*m + amount) +alpha[0] + alpha[(*k)-1]-n-r); s<= alpha[(*k)-1]; ++s)
@@ -128,16 +128,16 @@ void reverse_bs(double * old_log_subperms, double * new_log_subperms, int amount
 			for (int l = lstart; l <= s; ++l)
 			{
 
-				////fprintf(stdout,"r = %d, s = %d, l = %d\n", r,s,l);
+				////printf("r = %d, s = %d, l = %d\n", r,s,l);
 
 				if(r == 1 && s == 1){
-					////fprintf(stdout,"hit r=1, s=1, l=%d!\n", l);
-					////fprintf(stdout,"old_log_subperms[r,l] = %f\n", old_log_subperms[cord_spec(r,l,(n+1))]);
+					////printf("hit r=1, s=1, l=%d!\n", l);
+					////printf("old_log_subperms[r,l] = %f\n", old_log_subperms[cord_spec(r,l,(n+1))]);
 
 				}
 
 				if(old_log_subperms[cord_spec(r,l,(n+1))] < 0 ){
-					////fprintf(stdout,"SKIPPED\n");
+					////printf("SKIPPED\n");
 					temp_vec[l-lstart] = -1;
 					continue;
 				}
@@ -158,13 +158,13 @@ void reverse_bs(double * old_log_subperms, double * new_log_subperms, int amount
 							   log_lower3a - log_lower3b + old_log_subperms[cord_spec(r,l,(n+1))];
 
 				if(r==1 && s==1){
-					////fprintf(stdout,"log_upper1 = %f\n", log_upper1);
-					////fprintf(stdout,"log_upper2 = %f\n", log_upper2);
-					////fprintf(stdout,"log_upper3 = %f\n", log_upper3);
-					////fprintf(stdout,"log_lower1 = %f\n", log_lower1);
-					////fprintf(stdout,"log_lower2 = %f\n", log_lower2);
-					////fprintf(stdout,"log_lower3a = %f\n", log_lower3a);
-					////fprintf(stdout,"log_lower3b = %f\n", log_lower3b);
+					////printf("log_upper1 = %f\n", log_upper1);
+					////printf("log_upper2 = %f\n", log_upper2);
+					////printf("log_upper3 = %f\n", log_upper3);
+					////printf("log_lower1 = %f\n", log_lower1);
+					////printf("log_lower2 = %f\n", log_lower2);
+					////printf("log_lower3a = %f\n", log_lower3a);
+					////printf("log_lower3b = %f\n", log_lower3b);
 
 				}
 
@@ -304,10 +304,10 @@ void reverse_lm(double * old_log_subperms, double * new_log_subperms, int amount
 			maxval=-1;
 			for (int l = r; l <= (r+amount2); ++l)
 			{
-				////fprintf(stdout,"r = %d, s = %d, l = %d\n",r,s,l);
+				////printf("r = %d, s = %d, l = %d\n",r,s,l);
 				if(old_log_subperms[cord_spec(l,s,(n+1))] < 0 ){
 					temp_vec[l-r] = -1;
-					////fprintf(stdout,"skipping!\n");
+					////printf("skipping!\n");
 					continue;
 				}
 
@@ -521,7 +521,7 @@ void get_reduced_log_subperms(double * new_log_subperms, int * alpha, int * beta
 		new_log_subperms[cord_spec(0,0,(n+1))] = log_factorials[alpha[1]] - log_factorials[alpha[1]-(*m)];
 	}
 	else{
-		//fprintf(stdout,"Error in get_reduced_log_subperms! None of the four cases match the given arguments");
+		//printf("Error in get_reduced_log_subperms! None of the four cases match the given arguments");
 	}
 }
 
@@ -588,35 +588,35 @@ int reduction(int * alpha, int * beta, int * gamma, int *m, int n, int *k, int *
 
 	while(1){
 		if(alpha[0]>n){
-			fprintf(stdout,"ERROR! alpha[0]>n\n");
-			fprintf(stdout,"=====\n");
-			fprintf(stdout,"alpha:\n");
+			printf("ERROR! alpha[0]>n\n");
+			printf("=====\n");
+			printf("alpha:\n");
 			print_int_vector(n, alpha);
-			fprintf(stdout,"beta:\n");
+			printf("beta:\n");
 			print_int_vector(n, beta);
-			fprintf(stdout,"gamma:\n");
+			printf("gamma:\n");
 			print_int_vector(n, gamma);
-			fprintf(stdout,"m:\n");
+			printf("m:\n");
 			print_int_vector(1, m);
-			fprintf(stdout,"k:\n");
+			printf("k:\n");
 			print_int_vector(1, k);
-			fprintf(stdout,"=====\n");
+			printf("=====\n");
 			return -1;
 		}
 		if((*k)<0){
-			fprintf(stdout,"ERROR! k<0\n");
-			fprintf(stdout,"=====\n");
-			fprintf(stdout,"alpha:\n");
+			printf("ERROR! k<0\n");
+			printf("=====\n");
+			printf("alpha:\n");
 			print_int_vector(n, alpha);
-			fprintf(stdout,"beta:\n");
+			printf("beta:\n");
 			print_int_vector(n, beta);
-			fprintf(stdout,"gamma:\n");
+			printf("gamma:\n");
 			print_int_vector(n, gamma);
-			fprintf(stdout,"m:\n");
+			printf("m:\n");
 			print_int_vector(1, m);
-			fprintf(stdout,"k:\n");
+			printf("k:\n");
 			print_int_vector(1, k);
-			fprintf(stdout,"=====\n");
+			printf("=====\n");
 			return -1;
 		}
 		// if top trim possible
@@ -627,20 +627,20 @@ int reduction(int * alpha, int * beta, int * gamma, int *m, int n, int *k, int *
 			beta[0]=0;
 			historycounter++;
 			if(debug){
-				fprintf(stdout,"TOP TRIM ->\n");
+				printf("TOP TRIM ->\n");
 				//print_int_vector(n, beta);
-				fprintf(stdout,"=====\n");
-				fprintf(stdout,"alpha:\n");
+				printf("=====\n");
+				printf("alpha:\n");
 				print_int_vector(n, alpha);
-				fprintf(stdout,"beta:\n");
+				printf("beta:\n");
 				print_int_vector(n, beta);
-				fprintf(stdout,"gamma:\n");
+				printf("gamma:\n");
 				print_int_vector(n, gamma);
-				fprintf(stdout,"m:\n");
+				printf("m:\n");
 				print_int_vector(1, m);
-				fprintf(stdout,"k:\n");
+				printf("k:\n");
 				print_int_vector(1, k);
-				fprintf(stdout,"=====\n");
+				printf("=====\n");
 			}
 			
 			if(check_if_reduced(alpha, beta, gamma, 
@@ -655,20 +655,20 @@ int reduction(int * alpha, int * beta, int * gamma, int *m, int n, int *k, int *
 			gamma[0] = 0;
 			historycounter++;
 			if(debug){
-				fprintf(stdout,"BOTTOM SPLIT ->\n");
+				printf("BOTTOM SPLIT ->\n");
 				//print_int_vector(n, beta);
-				fprintf(stdout,"=====\n");
-				fprintf(stdout,"alpha:\n");
+				printf("=====\n");
+				printf("alpha:\n");
 				print_int_vector(n, alpha);
-				fprintf(stdout,"beta:\n");
+				printf("beta:\n");
 				print_int_vector(n, beta);
-				fprintf(stdout,"gamma:\n");
+				printf("gamma:\n");
 				print_int_vector(n, gamma);
-				fprintf(stdout,"m:\n");
+				printf("m:\n");
 				print_int_vector(1, m);
-				fprintf(stdout,"k:\n");
+				printf("k:\n");
 				print_int_vector(1, k);
-				fprintf(stdout,"=====\n");
+				printf("=====\n");
 			}
 			
 			if(check_if_reduced(alpha, beta, gamma, 
@@ -696,20 +696,20 @@ int reduction(int * alpha, int * beta, int * gamma, int *m, int n, int *k, int *
 			(*k)--;
 			historycounter++;
 			if(debug){
-				fprintf(stdout,"LEFT MERGE ->\n");
+				printf("LEFT MERGE ->\n");
 				//print_int_vector(n, beta);
-				fprintf(stdout,"=====\n");
-				fprintf(stdout,"alpha:\n");
+				printf("=====\n");
+				printf("alpha:\n");
 				print_int_vector(n, alpha);
-				fprintf(stdout,"beta:\n");
+				printf("beta:\n");
 				print_int_vector(n, beta);
-				fprintf(stdout,"gamma:\n");
+				printf("gamma:\n");
 				print_int_vector(n, gamma);
-				fprintf(stdout,"m:\n");
+				printf("m:\n");
 				print_int_vector(1, m);
-				fprintf(stdout,"k:\n");
+				printf("k:\n");
 				print_int_vector(1, k);
-				fprintf(stdout,"=====\n");	
+				printf("=====\n");	
 			}
 			if(check_if_reduced(alpha, beta, gamma, 
 					  m, k)){break;}
@@ -728,20 +728,20 @@ int reduction(int * alpha, int * beta, int * gamma, int *m, int n, int *k, int *
 			gamma[(*k)-2]=0;
 			historycounter++;
 			if(debug){
-				fprintf(stdout,"BOTTOM TRIM ->\n");
+				printf("BOTTOM TRIM ->\n");
 				//print_int_vector(n, beta);
-				fprintf(stdout,"=====\n");
-				fprintf(stdout,"alpha:\n");
+				printf("=====\n");
+				printf("alpha:\n");
 				print_int_vector(n, alpha);
-				fprintf(stdout,"beta:\n");
+				printf("beta:\n");
 				print_int_vector(n, beta);
-				fprintf(stdout,"gamma:\n");
+				printf("gamma:\n");
 				print_int_vector(n, gamma);
-				fprintf(stdout,"m:\n");
+				printf("m:\n");
 				print_int_vector(1, m);
-				fprintf(stdout,"k:\n");
+				printf("k:\n");
 				print_int_vector(1, k);
-				fprintf(stdout,"=====\n");
+				printf("=====\n");
 
 			}
 			if(check_if_reduced(alpha, beta, gamma, 
@@ -757,20 +757,20 @@ int reduction(int * alpha, int * beta, int * gamma, int *m, int n, int *k, int *
 			historycounter++;
 
 			if(debug){
-				fprintf(stdout,"TOP SPLIT ->\n");
+				printf("TOP SPLIT ->\n");
 				//print_int_vector(n, beta);
-				fprintf(stdout,"=====\n");
-				fprintf(stdout,"alpha:\n");
+				printf("=====\n");
+				printf("alpha:\n");
 				print_int_vector(n, alpha);
-				fprintf(stdout,"beta:\n");
+				printf("beta:\n");
 				print_int_vector(n, beta);
-				fprintf(stdout,"gamma:\n");
+				printf("gamma:\n");
 				print_int_vector(n, gamma);
-				fprintf(stdout,"m:\n");
+				printf("m:\n");
 				print_int_vector(1, m);
-				fprintf(stdout,"k:\n");
+				printf("k:\n");
 				print_int_vector(1, k);
-				fprintf(stdout,"=====\n");
+				printf("=====\n");
 
 			}
 			if(check_if_reduced(alpha, beta, gamma, 
@@ -790,26 +790,26 @@ int reduction(int * alpha, int * beta, int * gamma, int *m, int n, int *k, int *
 			historycounter++;
 
 			if(debug){
-				fprintf(stdout,"RIGHT MERGE ->\n");
+				printf("RIGHT MERGE ->\n");
 				//print_int_vector(n, beta);
-				fprintf(stdout,"=====\n");
-				fprintf(stdout,"alpha:\n");
+				printf("=====\n");
+				printf("alpha:\n");
 				print_int_vector(n, alpha);
-				fprintf(stdout,"beta:\n");
+				printf("beta:\n");
 				print_int_vector(n, beta);
-				fprintf(stdout,"gamma:\n");
+				printf("gamma:\n");
 				print_int_vector(n, gamma);
-				fprintf(stdout,"m:\n");
+				printf("m:\n");
 				print_int_vector(1, m);
-				fprintf(stdout,"k:\n");
+				printf("k:\n");
 				print_int_vector(1, k);
-				fprintf(stdout,"=====\n");
+				printf("=====\n");
 			}
 			if(check_if_reduced(alpha, beta, gamma, 
 					  m, k)){break;}
 		}
 		else{
-			fprintf(stdout,"ERROR!");
+			printf("ERROR!");
 			return -1;
 			break;
 		}		
@@ -819,7 +819,7 @@ int reduction(int * alpha, int * beta, int * gamma, int *m, int n, int *k, int *
 
 	}
 
-	//fprintf(stdout,"Terminated at iter %d\n", cc);
+	//printf("Terminated at iter %d\n", cc);
 	
 	*history_len = historycounter;
 	return 0;
@@ -849,10 +849,10 @@ double * reverse_reduction(double * old_log_subperms, double * new_log_subperms,
 				num_nonzeros++;
 			}
 		}
-		//fprintf(stdout,"Iter i=%d\nNum nonzeros = %d\n",i,num_nonzeros);
+		//printf("Iter i=%d\nNum nonzeros = %d\n",i,num_nonzeros);
 		if(history[i]==0){
 			// reverse top trim
-			//fprintf(stdout,"Reverse top trim!\n");
+			//printf("Reverse top trim!\n");
 			amount = amount_history[2*i];
 			reverse_tt(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -860,7 +860,7 @@ double * reverse_reduction(double * old_log_subperms, double * new_log_subperms,
 		}
 		else if(history[i] ==1){
 			// reverse bottom split
-			//fprintf(stdout,"Reverse bottom split!\n");
+			//printf("Reverse bottom split!\n");
 			amount = amount_history[2*i];
 			reverse_bs(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -869,7 +869,7 @@ double * reverse_reduction(double * old_log_subperms, double * new_log_subperms,
 
 		else if(history[i]==2){
 			// reverse left merge
-			//fprintf(stdout,"Reverse left merge!\n");
+			//printf("Reverse left merge!\n");
 			amount = amount_history[2*i];
 			amount2 = amount_history[2*i+1];
 			reverse_lm(old_log_subperms, new_log_subperms, amount, amount2,
@@ -879,7 +879,7 @@ double * reverse_reduction(double * old_log_subperms, double * new_log_subperms,
 
 		else if(history[i]==3){
 			// reverse bottom trim
-			//fprintf(stdout,"Reverse bottom trim!\n");
+			//printf("Reverse bottom trim!\n");
 			amount = amount_history[2*i];
 			reverse_bt(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -887,7 +887,7 @@ double * reverse_reduction(double * old_log_subperms, double * new_log_subperms,
 		}
 		else if(history[i]==4){
 			// reverse top split
-			//fprintf(stdout,"Reverse top split!\n");
+			//printf("Reverse top split!\n");
 			amount = amount_history[2*i];
 			reverse_ts(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
@@ -895,21 +895,21 @@ double * reverse_reduction(double * old_log_subperms, double * new_log_subperms,
 		}
 		else if(history[i]==5){
 			// reverse right merge
-			//fprintf(stdout,"Reverse right merge!\n");
+			//printf("Reverse right merge!\n");
 			amount = amount_history[2*i];
 			amount2 = amount_history[2*i+1];
 			reverse_rm(old_log_subperms, new_log_subperms, amount, amount2,
 				alpha,  beta, gamma,log_factorials, n, m, 
 				temp_vec,k);
 		}
-		////fprintf(stdout,"old = %d\n", old_log_subperms);
-		////fprintf(stdout,"new = %d\n", new_log_subperms);
-		//fprintf(stdout,"historyindex = %d\n", i);
-		//fprintf(stdout,"amount = %d\n", amount);
-		////fprintf(stdout,"Result:\n");
-		////fprintf(stdout,"Old:\n");
+		////printf("old = %d\n", old_log_subperms);
+		////printf("new = %d\n", new_log_subperms);
+		//printf("historyindex = %d\n", i);
+		//printf("amount = %d\n", amount);
+		////printf("Result:\n");
+		////printf("Old:\n");
 		//print_matrix(n+1,n+1,old_log_subperms);		
-		////fprintf(stdout,"New:\n");
+		////printf("New:\n");
 		//print_matrix(n+1,n+1,new_log_subperms);
 
 		tmp  = old_log_subperms;
@@ -917,7 +917,7 @@ double * reverse_reduction(double * old_log_subperms, double * new_log_subperms,
 		new_log_subperms = tmp;
 	}
 	//print_matrix((n+1),(n+1), old_log_subperms);
-	////fprintf(stdout,"\n");
+	////printf("\n");
 	//print_matrix((n+1),(n+1), new_log_subperms);
 
 	return old_log_subperms;

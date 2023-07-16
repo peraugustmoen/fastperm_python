@@ -86,7 +86,7 @@ void get_alphabetagamma(double * x, int n, double * a, double * b, double * a_un
     for (int i = 0; i < len_a_union_b-1; ++i)
     {
         if(debug){
-            fprintf(stdout,"a_union_b[%d] = %f\n", i, a_union_b[i]);
+            printf("a_union_b[%d] = %f\n", i, a_union_b[i]);
 
         }
         for (int j = 0; j < n; ++j)
@@ -98,7 +98,7 @@ void get_alphabetagamma(double * x, int n, double * a, double * b, double * a_un
             }
         }
         if(debug){
-            fprintf(stdout,"alpha = %d\n", alpha[alpha_counter]);
+            printf("alpha = %d\n", alpha[alpha_counter]);
 
         }
         
@@ -138,7 +138,7 @@ void get_alphabetagamma(double * x, int n, double * a, double * b, double * a_un
 
         }
         if(debug){
-            fprintf(stdout,"alphacounter = %d\n", alpha_counter);
+            printf("alphacounter = %d\n", alpha_counter);
 
         }
     }

@@ -7,11 +7,11 @@ size_t hash(pair p, int table_size) {
     t[0] = p.x;
     t[1] = p.y;
     XXH64_hash_t hash = XXH64(t, sizeof(int)*2, 1337);
-    //fprintf(stdout,"%lx\n", hash);
-/*    fprintf(stdout,"%ld\n", (int)hash);
-    fprintf(stdout,"%ld\n", abs((int)hash));
-    fprintf(stdout,"%d\n", sizeof(size_t));*/
-    //fprintf(stdout,"hash(%d,%d): %d\n",p.x, p.y, abs(((int) hash) % table_size));
+    //printf("%lx\n", hash);
+/*    printf("%ld\n", (int)hash);
+    printf("%ld\n", abs((int)hash));
+    printf("%d\n", sizeof(size_t));*/
+    //printf("hash(%d,%d): %d\n",p.x, p.y, abs(((int) hash) % table_size));
     return( hash % table_size);
     //return (4294967279 * p.x + 4294967291 * p.y) % table_size;
     //return(1001*p.x + p.y);
@@ -83,17 +83,17 @@ void update_dict(pair p, double value, dictionary * dict){
 
 /*    
     if(collcount>10){
-    	fprintf(stdout,"collcount = %d\n",collcount);
+    	printf("collcount = %d\n",collcount);
     }
 */    
     if(index ==-1 || index >=(*dict).used_len){
     	//if(collcount>10){
-		//    fprintf(stdout,"[%d,%d]-> h = %ld : collcount = %d, table_size = %ld, used_len = %ld\n", p.x, p.y,h,collcount, (*dict).table_size, (*dict).used_len);
+		//    printf("[%d,%d]-> h = %ld : collcount = %d, table_size = %ld, used_len = %ld\n", p.x, p.y,h,collcount, (*dict).table_size, (*dict).used_len);
     	//}
     	// NEW VALUE!!!
     	if (RATIO*((*dict).used_len +1)> (*dict).table_size)
 		{	
-			//fprintf(stdout,"EXPANDING DICTIONARY: used = %ld, table_size = %ld\n",(*dict).used_len +1,(*dict).table_size);
+			//printf("EXPANDING DICTIONARY: used = %ld, table_size = %ld\n",(*dict).used_len +1,(*dict).table_size);
 			expand_dictionary(dict);
 		}
 
@@ -106,11 +106,11 @@ void update_dict(pair p, double value, dictionary * dict){
     }
 
     double existing_val = (*dict).value_array[index];
-    //fprintf(stdout,"FOUND IN DICT! existing_val = %f\n", existing_val);
-    //fprintf(stdout,"new input value = %f\n", value);
+    //printf("FOUND IN DICT! existing_val = %f\n", existing_val);
+    //printf("new input value = %f\n", value);
 
     if(existing_val>value){
-    	//fprintf(stdout,"existing_val > value\n");
+    	//printf("existing_val > value\n");
     	(*dict).value_array[index] += log(1.0 + exp(value - existing_val));
     }else{
     	(*dict).value_array[index] = value + log(1.0+ exp(existing_val - value));
@@ -143,7 +143,7 @@ void free_dictionary(dictionary * dict){
 }
 
 void expand_dictionary(dictionary * dict){
-	//fprintf(stdout,"EXPANDING DICTIONARY. old_size = %ld, new = %ld\n", (*dict).table_size, 2*(*dict).table_size);
+	//printf("EXPANDING DICTIONARY. old_size = %ld, new = %ld\n", (*dict).table_size, 2*(*dict).table_size);
 	pair * newarray = realloc((*dict).array, (size_t) 2*(*dict).table_size*sizeof(pair));
 	if(newarray==NULL){
 		newarray= (pair *) calloc( 2 * ((*dict).table_size),  sizeof(pair));
@@ -203,7 +203,7 @@ void print_sparse_matrix(dictionary * matrix) {
 
     // Print out the matrix with aligned columns
     for (int i = 0; i < (*matrix).used_len; i++) {
-    	fprintf(stdout,"(%d, %d) = %f\n", (*matrix).array[i].x, (*matrix).array[i].y, (*matrix).value_array[i]);
+    	printf("(%d, %d) = %f\n", (*matrix).array[i].x, (*matrix).array[i].y, (*matrix).value_array[i]);
 
     }
 }
@@ -215,9 +215,9 @@ void print_matrix(int rows, int cols, double * matrix) {
     // Print out the matrix with aligned columns
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            fprintf(stdout,"%5f ", matrix[cord_spec(i,j,rows)]);
+            printf("%5f ", matrix[cord_spec(i,j,rows)]);
         }
-        //fprintf(stdout,"\n");
+        //printf("\n");
     }
 }
 
@@ -225,21 +225,21 @@ void print_int_vector(int len,  int * vec) {
 	/*return;*/
 
     // Print out the matrix with aligned columns
-    fprintf(stdout,"(");
+    printf("(");
     for (int i = 0; i < (len); i++) {
-        fprintf(stdout,"%d ", vec[i]);
+        printf("%d ", vec[i]);
     }
-    fprintf(stdout,")\n");
+    printf(")\n");
 }
 void print_float_vector(int len,  double * vec) {
 	/*return;*/
 
     // Print out the matrix with aligned columns
-    fprintf(stdout,"(");
+    printf("(");
     for (int i = 0; i < (len); i++) {
-        fprintf(stdout,"%f ", vec[i]);
+        printf("%f ", vec[i]);
     }
-    fprintf(stdout,")\n");
+    printf(")\n");
 }
 
 
@@ -265,7 +265,7 @@ double Clog_sum_exp(double * array, int len, double maxval){
 		exp_result += exp(array[i] - maxval);
 	}
 
-	////fprintf(stdout,"res = %f\n", (maxval + log(exp_result)));
+	////printf("res = %f\n", (maxval + log(exp_result)));
 	return (maxval + log(exp_result));
 }
 
@@ -296,7 +296,7 @@ double Csparse_log_sum_exp(dictionary * dict){
 		exp_result += exp((*dict).value_array[z] - maxval);
 	}
 
-	////fprintf(stdout,"res = %f\n", (maxval + log(exp_result)));
+	////printf("res = %f\n", (maxval + log(exp_result)));
 	return (maxval + log(exp_result));
 }
 /*
@@ -320,7 +320,7 @@ SEXP C_wrapper_log_sum_exp(SEXP xSEXP, SEXP lenSEXP){
 			maxval = x[i];
 		}
 	}
-	////fprintf(stdout,"maxval = %f\n", maxval);
+	////printf("maxval = %f\n", maxval);
 	*ret = Clog_sum_exp(x, len, maxval);
 
 	UNPROTECT(3);

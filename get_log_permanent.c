@@ -30,7 +30,18 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
   	if(!PyArray_ISFLOAT(Xo)){
   		PyErr_SetString(PyExc_ValueError, "X must be of type float");
   		return NULL;
-
+  	}
+  	if(PyArray_TYPE(Xo)!= NPY_DOUBLE){
+  		PyErr_SetString(PyExc_ValueError, "X must have dtype numpy.float64");
+  		return NULL;
+  	}
+  	if(PyArray_TYPE(ao)!= NPY_DOUBLE){
+  		PyErr_SetString(PyExc_ValueError, "a must have dtype numpy.float64");
+  		return NULL;
+  	}
+  	if(PyArray_TYPE(bo)!= NPY_DOUBLE){
+  		PyErr_SetString(PyExc_ValueError, "b must have dtype numpy.float64");
+  		return NULL;
   	}
   	if( PyArray_NDIM(ao) != 1 || !PyArray_ISFLOAT(ao) ){
   		PyErr_SetString(PyExc_ValueError, "a must be one-dimensional and of type float");
@@ -43,15 +54,32 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
   	npy_intp * shapeX = PyArray_SHAPE(Xo);
 
-  	printf("dim(X)[0] = %d, dim(X)[1] = %d\n", (int)shapeX[0], (int)shapeX[1]);
+  	if( (int)shapeX[0] != T || (int)shapeX[1] != n ){
+  		PyErr_SetString(PyExc_ValueError, "X must be T x n");
+  		return NULL;
+  	}
+  	//printf("fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
+  	if(PyArray_IS_F_CONTIGUOUS(Xo)){
+  		if(debug){
+  			printf("Fortran style memory layout detected. Transforming to C style.\n");
+  		}
+  		Xo = (PyArrayObject *)PyArray_CastToType(Xo, PyArray_DESCR(Xo), 0);
+  	}
+  	//printf("fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
+
+  	if(debug){
+  		printf("dim(X)[0] = %d, dim(X)[1] = %d\n", (int)shapeX[0], (int)shapeX[1]);
+
+  	}
+  	
 
     double *X = PyArray_DATA(Xo);
     double *a = PyArray_DATA(ao);
     double *b = PyArray_DATA(bo);
 
-	PyArray_Sort(ao,0,0);
-	PyArray_Sort(bo,0,0);
-
+	PyArray_Sort(ao,0,NPY_QUICKSORT);
+	PyArray_Sort(bo,0,NPY_QUICKSORT);
+	PyArray_Sort(Xo, 1, NPY_QUICKSORT);
 	//R_qsort(a, 1, n);
 	//R_qsort(b, 1, n);
 

@@ -368,7 +368,46 @@ static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
 
 
 static PyMethodDef fastpermMethods[] = {
-  {"get_log_permanents", C_get_log_permanents, METH_VARARGS, "Function for computing log permanents"},
+  {"get_log_permanents", C_get_log_permanents, METH_VARARGS, "get_log_permanents(X, a, b,n,T,debug)\n\
+\n\
+Computes log permanents (i.e.importance weights)\n\
+associated with a simulated data set X and \n\
+data a,b.\n\
+\n\
+Given a matrix X of samples from a proposal distribution,\n\
+and vectors a,b containing left and right censoring points,\n\
+the function returns a vector of log permanents corresponding \n\
+to each sample. \n\
+\n\
+Parameters \n\
+---------- \n\
+X : ndarray \n\
+    A numpy array of dimension T x n, in \n\
+    which each row contains a sample from \n\
+    the proposal distribution. \n\
+a : ndarray\n\
+    A flat numpy array of length n\n\
+    containing the left censoring\n\
+    points of the data.\n\
+b : ndarray\n\
+    A flat numpy array of length n\n\
+    containing the right censoring\n\
+    points of the data.\n\
+n : int\n\
+    Sample size.\n\
+T : int\n\
+    Number of samples from the\n\
+    proposal distribution.\n\
+debug : boolean\n\
+    If true, debug information\n\
+    is printed to stdout.\n\
+\n\
+Returns \n\
+------- \n\
+ndarray \n\
+    Numpy array of log permanents,\n\
+    each element associated to \n\
+    the corresponding row in X.\n"},
   {"log_sum_exp", log_sum_exp, METH_VARARGS, "log_sum_exp(array)\n\
 \n\
 Computes the log sum exp of an array. \n\

@@ -1,6 +1,5 @@
 #include "header.h"
 
-
 static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 	PyArrayObject* Xo; // X (python object)

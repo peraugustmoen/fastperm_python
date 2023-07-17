@@ -2,17 +2,10 @@
 
 
 static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
-//(SEXP XSEXP, SEXP aSEXP, SEXP bSEXP, SEXP nSEXP, SEXP TSEXP, SEXP debugSEXP){
-	
 
-	// X MUST ALREADY BE SORTED!!!!!!!!
-	
-	// REMEMBER THAT PYTHON IS COLUMN MAJOR! FIX THIS PLS
-
-
-	PyArrayObject* Xo;
-	PyArrayObject* ao;
-	PyArrayObject* bo;
+	PyArrayObject* Xo; // X (python object)
+	PyArrayObject* ao; // a (python object)
+	PyArrayObject* bo; // b (python object)
 	int n;
 	int T;
 	int debug;
@@ -58,6 +51,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
   		PyErr_SetString(PyExc_ValueError, "X must be T x n");
   		return NULL;
   	}
+
   	//fprintf(stdout,"fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
   	if(PyArray_IS_F_CONTIGUOUS(Xo)){
   		if(debug){
@@ -65,6 +59,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
   		}
   		Xo = (PyArrayObject *)PyArray_CastToType(Xo, PyArray_DESCR(Xo), 0);
   	}
+
   	//fprintf(stdout,"fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
 
   	if(debug){
@@ -80,8 +75,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 	PyArray_Sort(ao,0,NPY_QUICKSORT);
 	PyArray_Sort(bo,0,NPY_QUICKSORT);
 	PyArray_Sort(Xo, 1, NPY_QUICKSORT);
-	//R_qsort(a, 1, n);
-	//R_qsort(b, 1, n);
+
 
 
 	
@@ -97,12 +91,6 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 	get_union(n, a, b, &len_a_union_b, a_union_b);
 
-	/*SEXP alphaSEXP = PROTECT(allocVector(INTSXP, n));
-	SEXP betaSEXP = PROTECT(allocVector(INTSXP, n));
-	SEXP gammaSEXP = PROTECT(allocVector(INTSXP, n));
-	SEXP logfactorialsSEXP = PROTECT(allocVector(REALSXP, n+1));
-	SEXP mSEXP = PROTECT(allocVector(INTSXP, 1));
-	SEXP k_SEXP = PROTECT(allocVector(INTSXP, 1));*/
 
 	
 	int * alpha = (int*) malloc(sizeof(int) * n);
@@ -133,9 +121,6 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 	}
 
 	
-	
-/*	SEXP historySEXP = PROTECT(allocVector(INTSXP, 3*n));
-	SEXP amount_historySEXP = PROTECT(allocVector(INTSXP, 6*n));*/
 
 	int * history = (int * ) malloc(sizeof(int)*3*n);
 	int * amount_history = (int * ) malloc(sizeof(int)*6*n);
@@ -309,10 +294,8 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 	free_dictionary(new_log_subperms);
 	free_dictionary(old_log_subperms);
 
-	// FREE MALLOCED STUFF!!!!!!!!!!!
-	// 
-	// 
-	long dims[1];
+
+	npy_intp dims[1];
 	dims[0] = T;
 	
 	free(a_union_b);
@@ -332,8 +315,6 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 
 static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
-//(SEXP XSEXP, SEXP aSEXP, SEXP bSEXP, SEXP nSEXP, SEXP TSEXP, SEXP debugSEXP){
-	
 
 	PyArrayObject* arrayo;
 
@@ -388,7 +369,22 @@ static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
 
 static PyMethodDef fastpermMethods[] = {
   {"get_log_permanents", C_get_log_permanents, METH_VARARGS, "Function for computing log permanents"},
-  {"log_sum_exp", log_sum_exp, METH_VARARGS, "Computes log sum exp of an array"},
+  {"log_sum_exp", log_sum_exp, METH_VARARGS, "log_sum_exp(array)\n\
+\n\
+Computes the log sum exp of an array. \n\
+\n\
+Given input array = [x_1, ..., x_n], function returns \n\
+x_* + log(exp(x_1 - x_*) + ... + exp(x_n - x_*)), \n\
+where x_* = max(x_1, ... x_n).\n\
+\n\
+Parameters \n\
+---------- \n\
+array : ndarray \n\
+    data array \n\
+\n\
+Returns \n\
+------- \n\
+float \n"},
   {NULL, NULL, 0, NULL}
 };
 

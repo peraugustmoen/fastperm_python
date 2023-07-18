@@ -10,7 +10,6 @@ def main():
         url = 'https://github.com/peraugustmoen/fastperm',  
         download_url = 'https://github.com/peraugustmoen/fastperm/archive/refs/tags/v_01.tar.gz',
         name="fastperm",
-        packages=["fastperm"],
         version="0.2",
         install_requires=["numpy"],
         include_dirs=[np.get_include()],

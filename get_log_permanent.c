@@ -247,7 +247,8 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 			free_dictionary(new_log_subperms);
 			free_dictionary(old_log_subperms);
 
-			
+			PyErr_SetString(PyExc_RuntimeError, sprintf("Failed to compute permanent of sample t=%d\n", t));
+
 			return NULL;
 		}
 

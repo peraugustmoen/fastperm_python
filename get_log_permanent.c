@@ -58,7 +58,6 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
   		Xo = (PyArrayObject *)PyArray_CastToType(Xo, PyArray_DESCR(Xo), 0);
   	}
 
-  	//fprintf(stdout,"fortran style = %d\n", PyArray_IS_F_CONTIGUOUS(Xo));
 
   	if(debug){
   		fprintf(stdout,"dim(X)[0] = %d, dim(X)[1] = %d\n", (int)shapeX[0], (int)shapeX[1]);
@@ -129,16 +128,9 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 	for (int t = 0; t < T; ++t)
 	{
-		//fprintf(stdout,"t = %d\n",t);
-		//double * x = X + (t*n);
 		double * x = &(X[t*n]);
 		
 		
-		/*if(t ==0){
-			fprintf(stdout,"x[0] = %f, x[1] = %f, x[n] = %f\n", x[0], x[1], x[n-1]);
-		}*/
-
-		//fprintf(stdout,"x[0] = %f, x[1] = %f, x[n] = %f\n", x[0], x[1], x[n-1]);
 		if(!nonzero_perm(x, a,  b, n)){
 			logperms[t] = -1;
 			continue;
@@ -187,7 +179,6 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 			fprintf(stdout,"REDUCING NOW\n");
 		}
 		
-		//return(XSEXP);
 		int result = reduction(alpha,  beta,  gamma, m, n, k, history,
 				   amount_history, &history_len, debug);
 
@@ -238,15 +229,16 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 				fprintf(stdout,"REDUCING NOW\n");
 			}
 			
-			//return(XSEXP);
-			int result = reduction(alpha,  beta,  gamma, m, n, k, history,
+			result = reduction(alpha,  beta,  gamma, m, n, k, history,
 					   amount_history, &history_len, debug);
 
 
 			free_dictionary(new_log_subperms);
 			free_dictionary(old_log_subperms);
 
-			PyErr_SetString(PyExc_RuntimeError, sprintf("Failed to compute permanent of sample t=%d\n", t));
+			PyErr_Format(PyExc_RuntimeError,
+                 "Failed to compute permanent of sample t=%d\n", t
+                 );
 
 			return NULL;
 		}
@@ -258,8 +250,6 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 		}
 		sparse_get_reduced_log_subperms( new_log_subperms,  alpha, beta, gamma,
 						log_factorials, n,  m, k);
-		//fprintf(stdout,"RESULT:\n");
-		//print_matrix(n+1, n+1, new_log_subperms);
 
 		dictionary * tmp  = old_log_subperms;
 		old_log_subperms = new_log_subperms;
@@ -270,8 +260,6 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 		if(debug){
 			fprintf(stdout,"==========\nReverse reduction:\n==========\n");
 		}
-		//fprintf(stdout,"old = %d\n", old_log_subperms);
-		//fprintf(stdout,"new = %d\n", new_log_subperms);
 		dictionary * the_log_subperms = sparse_reverse_reduction(old_log_subperms, new_log_subperms, alpha,
 						   beta,  gamma, m,  n, k,  history,
 				           amount_history, &history_len, log_factorials);
@@ -366,7 +354,7 @@ static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
 }
 
 
-static PyMethodDef fastpermMethods[] = {
+static PyMethodDef permsMethods[] = {
   {"get_log_permanents", C_get_log_permanents, METH_VARARGS, "get_log_permanents(X, a, b,n,T,debug)\n\
 \n\
 Computes log permanents (i.e.importance weights)\n\
@@ -375,8 +363,8 @@ data a,b.\n\
 \n\
 Given a matrix X of samples from a proposal distribution,\n\
 and vectors a,b containing left and right censoring points,\n\
-the function returns a vector of log permanents corresponding \n\
-to each sample. \n\
+respectively, the function returns a vector of log permanents\n\
+corresponding to each sample. \n\
 \n\
 Parameters \n\
 ---------- \n\
@@ -426,18 +414,18 @@ float \n"},
   {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef fastperm = {
+static struct PyModuleDef perms = {
   PyModuleDef_HEAD_INIT,
-  "fastperm",
+  "perms",
   "Module for computing permanents of a block rectangular matrix",
   -1,
-  fastpermMethods
+  permsMethods
 };
 
-PyMODINIT_FUNC PyInit_fastperm(void)
+PyMODINIT_FUNC PyInit_perms(void)
 {
     import_array();
-    return PyModule_Create(&fastperm);
+    return PyModule_Create(&perms);
 }
 
 int nonzero_perm(double * x, double * a, double * b, int n){

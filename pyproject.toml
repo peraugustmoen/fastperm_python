@@ -2,13 +2,13 @@
 requires = ["setuptools>=58","numpy"]
 build-backend = "setuptools.build_meta"
 [project]
-name = "fastperm"
-version = "0.1"
+name = "perms"
+version = "1.0"
 authors = [
-  { name="Dennis Christensen", email="author@example.com" },
+  { name="Dennis Christensen", email="dennis.christensen@ffi.no" },
   { name="Per August Jarval Moen", email="pamoen@math.uio.no" }
 ]
-description = "FASTPERM"
+description = "perms"
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
@@ -18,4 +18,4 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/peraugustmoen/fastperm_python"
+"Homepage" = "https://github.com/peraugustmoen/perms"

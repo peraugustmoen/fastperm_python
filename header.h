@@ -47,6 +47,8 @@ void print_float_vector(int ,  double * );
 static PyObject *C_get_log_permanents(PyObject *, PyObject *);
 static PyObject *log_sum_exp(PyObject *, PyObject *);
 static PyObject *C_get_log_ML(PyObject *, PyObject *);
+static PyObject *C_get_log_permanents_bioassay(PyObject *, PyObject *);
+static PyObject *C_get_log_ML_bioassay(PyObject *, PyObject *);
 
 double Clog_sum_exp(double * , int, double );
 double Csparse_log_sum_exp(dictionary *);

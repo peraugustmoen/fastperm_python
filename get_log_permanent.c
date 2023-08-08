@@ -858,20 +858,21 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
 	PyArrayObject* trialso; // t (python object)
 	PyArrayObject* logpermso; // y (python object)
 	int n;
+	int num_trials;
 	int S;
 	int debug;
-	int constant_ts=1;
 
-	if (!PyArg_ParseTuple(args, "O!O!O!iii", &PyArray_Type, &trialso,&PyArray_Type, &successeso,&PyArray_Type, &logpermso, &n, &S,&debug)){
+	if (!PyArg_ParseTuple(args, "O!O!O!iii",&PyArray_Type, &logpermso, &PyArray_Type, &successeso,
+		&PyArray_Type, &trialso, &n, &num_trials, &S,&debug)){
         return NULL;
   	}
   	if(PyArray_NDIM(trialso)!= 1){
-		PyErr_SetString(PyExc_ValueError, "t must be 1-dimensional");
+		PyErr_SetString(PyExc_ValueError, "trials must be 1-dimensional");
 		return NULL;
   	}
 
-  	if(PyArray_TYPE(to)!= NPY_DOUBLE){
-  		PyErr_SetString(PyExc_ValueError, "t must have dtype numpy.float64");
+  	if(PyArray_TYPE(trialso)!= NPY_INT32){
+  		PyErr_SetString(PyExc_ValueError, "trials must have dtype numpy.int32");
   		return NULL;
   	}
 
@@ -887,42 +888,29 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
   		PyErr_SetString(PyExc_ValueError, "logperms must have dtype numpy.float64");
   		return NULL;
   	}
-  	if(PyArray_NDIM(yo)!= 1){
-		PyErr_SetString(PyExc_ValueError, "y must be 1-dimensional");
+  	if(PyArray_NDIM(successeso)!= 1){
+		PyErr_SetString(PyExc_ValueError, "successes must be 1-dimensional");
 		return NULL;
   	}
-  	if(PyArray_TYPE(yo)!= NPY_INT32){
-  		PyErr_SetString(PyExc_ValueError, "y must be np.int32");
+  	if(PyArray_TYPE(successeso)!= NPY_INT32){
+  		PyErr_SetString(PyExc_ValueError, "successes must be np.int32");
   		return NULL;
   	}
 
 
-
-  	if( PyArray_NDIM(yo) != 1 ){
-  		
-		PyErr_SetString(PyExc_ValueError, "y must be one-dimensional");
-		return NULL;
-  		
-  	}
-  	if( PyArray_NDIM(logpermso) != 1 ){
-  		
-		PyErr_SetString(PyExc_ValueError, "logperms must be one-dimensional");
-		return NULL;
-  		
-  	}
   	
 
-  	npy_intp * shapet = PyArray_SHAPE(to);
-  	npy_intp * shapey = PyArray_SHAPE(yo);
+  	npy_intp * shapetrials = PyArray_SHAPE(trialso);
+  	npy_intp * shapesuccesses = PyArray_SHAPE(successeso);
   	npy_intp * shapelogperms = PyArray_SHAPE(logpermso);
 
-  	if( (int)shapet[0] != n ){
-  		PyErr_SetString(PyExc_ValueError, "t must have length n");
+  	if( (int)shapetrials[0] != num_trials ){
+  		PyErr_SetString(PyExc_ValueError, "trials must have length num_trials");
   		return NULL;
   	}
 
-  	if( (int)shapey[0] != n ){
-  		PyErr_SetString(PyExc_ValueError, "y must have length n");
+  	if( (int)shapesuccesses[0] != num_trials){
+  		PyErr_SetString(PyExc_ValueError, "successes must have length num_trials");
   		return NULL;
   	}
 
@@ -931,9 +919,9 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
   		return NULL;
   	}
 
-  	double *t = PyArray_DATA(yo);
+  	int *trials = PyArray_DATA(trialso);
     double *logperms = PyArray_DATA(logpermso);
-    int *y = PyArray_DATA(yo);
+    int *successes = PyArray_DATA(successeso);
 
 
   	double maxval = -1;
@@ -967,39 +955,11 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
 	}
 
 	*result = *result -log_factorials[n];
-  	//order the t's
-
-    PyArray_Sort(to,0,NPY_QUICKSORT);
-
-    int j=0;
-
-    int v = 1;
-    int u = 0;
-    if(y[0]==1){
-    	u =1;
-    }
-    double prev = t[0];
-
-    for (int i = 1; i < n; ++i)
-    {
-    	if(t[i]!= prev){
-
-    		*result = *result + log_factorials[v] - log_factorials[u] - log_factorials[v-u];
-    		v=1;
-    		u=1;
-    		if(y[i]==1){
-    			u=1;
-    		}
-    	}else{
-    		v++;
-    		if(y[i]==1){
-    			u++;
-    		}
-    	}
-    	
-    }
-
-    *result = *result + log_factorials[v] - log_factorials[u] - log_factorials[v-u];
+  	
+  	for (int j = 0; j < num_trials; ++j)
+  	{
+  		*result = *result + log_factorials[trials[j]] - log_factorials[successes[j]] - log_factorials[trials[j] - successes[j]];
+  	}
 
 
 
@@ -1089,11 +1049,6 @@ static PyObject *C_get_log_ML(PyObject *self, PyObject *args) {
   	return output;
 
 }
-
-
-
-
-
 
 static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
 
@@ -1214,7 +1169,7 @@ array : ndarray \n\
 Returns \n\
 ------- \n\
 float \n"},
-{"get_log_ML", C_get_log_ML, METH_VARARGS, "C_get_log_ML(logperms, n, S, debug)\n\
+{"get_log_ML", C_get_log_ML, METH_VARARGS, "get_log_ML(logperms, n, S, debug)\n\
 \n\
 Computes the log marginal likelihood of the data from the log permanents.\n\
 \n\
@@ -1245,7 +1200,7 @@ Returns \n\
 ------- \n\
 float \n\
     The estimated log marginal likelihood.\n"},
-{"get_log_permanents_bioassay", C_get_log_permanents_bioassay, METH_VARARGS, "get_log_permanents_bioassay(X, levels, successes, trials, n, numtrials, S, debug)\n\
+{"get_log_permanents_bioassay", C_get_log_permanents_bioassay, METH_VARARGS, "get_log_permanents_bioassay(X, levels, successes, trials, n, num_trials, S, debug)\n\
 \n\
 Computes log permanents associated with simulated latent variables X with\n\
 bioassay data.\n\
@@ -1274,12 +1229,10 @@ successes : ndarray \n\
 trials : ndarray \n\
     A flat numpy array of length n and dtype int32\n\
     containing the number of trials at each level.\n\
-y : ndarray \n\
-    A flat numpy array of length n and dtype int32\n\
-    indicating whether x_i<=t_i for each i in the\n\
-    observed data.\n\
 n : int\n\
     Sample size.\n\
+num_trials: int\n\
+	Number of different trials.\n\
 S : int\n\
     Number of samples from the\n\
     data model. That is, the number\n\
@@ -1296,6 +1249,45 @@ ndarray \n\
     the corresponding row in X.\n\
     A zero valued permanent is indicated\n\
     by a -1.\n"},
+{"get_log_ML_bioassay", C_get_log_ML_bioassay, METH_VARARGS, "get_log_ML_bioassay(logperms, successes, trials, n, num_trials S, debug)\n\
+\n\
+Computes the log marginal likelihood of bioassay data from the log permanents. \n\
+\n\
+Given the computed log permanents logperms, this function\n\
+computes the log marginal likelihood using the formula (2.3)\n\
+in [1]. It takes care of repeated trials by adding the appropriate\n\
+log binomial factor.\n\
+\n\
+Parameters \n\
+---------- \n\
+logperms : ndarray\n\
+    A flat numpy array of length n\n\
+    containing the computed log permanents,\n\
+    where a zero permanent is indicated by \n\
+    a -1.\n\
+successes : ndarray \n\
+    A flat numpy array of length n and dtype int32\n\
+    contatining the number of successful trials at\n\
+    each level.\n\
+trials : ndarray \n\
+    A flat numpy array of length n and dtype int32\n\
+    containing the number of trials at each level.\n\
+n : int\n\
+    Sample size.\n\
+num_trials : int\n\
+    Number of different trials.\n\
+S : int\n\
+    Number of samples from the\n\
+    data model. That is, the number\n\
+    of iterations in the estimator.\n\
+debug : boolean\n\
+    If true, debug information\n\
+    is printed to stdout.\n\
+\n\
+Returns \n\
+------- \n\
+float \n\
+    The estimated log marginal likelihood.\n"},
   {NULL, NULL, 0, NULL}
 };
 

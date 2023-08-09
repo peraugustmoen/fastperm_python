@@ -10,7 +10,7 @@ def main():
         url = 'https://github.com/peraugustmoen/perms',  
         download_url = 'https://github.com/peraugustmoen/fastperm/archive/refs/tags/v_1_3.tar.gz',
         name="fastperm",
-        version="1.3",
+        version="1.4",
         install_requires=["numpy"],
         include_dirs=[np.get_include()],
         ext_modules=[Extension("perms", ["get_log_permanent.c", "help_functions.c", "get_alphabetagamma.c",\

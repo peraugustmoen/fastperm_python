@@ -501,9 +501,10 @@ void get_reduced_log_subperms(double * new_log_subperms, int * alpha, int * beta
 
 char check_if_reduced(int * alpha, int * beta, int * gamma, 
 					  int * m, int * k){
-	// case 1': 
+
 	char reduced = 0;
 
+	// case 1: 
 	if((*k)==2 && beta[0]==0 && gamma[0]==0){
 		reduced =1;
 	}
@@ -525,6 +526,7 @@ char check_if_reduced(int * alpha, int * beta, int * gamma,
 	else if((*k)==3 && beta[0]==0 && beta[1]==(*m) && gamma[0] == (*m) && gamma[1] == 0){
 		reduced = 1;
 	}
+
 	return reduced;
 }
 
@@ -564,8 +566,6 @@ int reduction(int * alpha, int * beta, int * gamma, int *m, int n, int *k, int *
 	int cc = 0;
 
 	if(!reduced){
-
-
 		while(1){
 			if(alpha[0]>n){
 				printf("ERROR! alpha[0]>n\n");

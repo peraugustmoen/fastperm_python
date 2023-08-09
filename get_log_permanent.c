@@ -14,6 +14,9 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
         return NULL;
   	}
 
+  	if(S==1){
+  		constant_ts = 1;
+  	}
   	if(PyArray_NDIM(Xo)!= 2){
   		if(S!=1){
   			PyErr_SetString(PyExc_ValueError, "X must be 2-dimensional whenever S> 1");
@@ -52,10 +55,14 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
   	npy_intp * shapet = PyArray_SHAPE(to);
   	npy_intp * shapey = PyArray_SHAPE(yo);
 
-  	if( (int)shapeX[0] != S || (int)shapeX[1] != n ){
-  		PyErr_SetString(PyExc_ValueError, "X must be S x n");
-  		return NULL;
-  	}
+  	if(S>1){
+	  	if( (int)shapeX[0] != S || (int)shapeX[1] != n ){
+	  		PyErr_SetString(PyExc_ValueError, "X must be S x n");
+	  		return NULL;
+	  	}
+	}else if((int)shapeX[0] != n){
+		PyErr_SetString(PyExc_ValueError, "X must be of length n whenever S=1");
+	}
 
   	if ((int)shapey[0] != n)
   		{
@@ -160,8 +167,11 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
     }
     
 
-	
-	PyArray_Sort(Xo, 1, NPY_QUICKSORT);
+	if(S>1){
+		PyArray_Sort(Xo, 1, NPY_QUICKSORT);
+	}else{
+		PyArray_Sort(Xo, 0, NPY_QUICKSORT);
+	}
 
 
 
@@ -236,6 +246,10 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 				logperms[s] = -1;
 				continue;
 			}
+			if((*k)==1){
+				logperms[s] = log_factorials[n];
+				continue;
+			}
 		}else{
 		    for (int i = 0; i < n; ++i)
 		    {
@@ -266,6 +280,14 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 			get_alphabetagamma(x, n, a, b, a_union_b, len_a_union_b, alpha, 
 		    beta, gamma,  k, m, debug);
+		    if(!nonzero_perm(x, a,  b, n)){
+				logperms[s] = -1;
+				continue;
+			}
+			if((*k)==1){
+				logperms[s] = log_factorials[n];
+				continue;
+			}
 	   
 		}
 
@@ -297,7 +319,6 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 		int history_len = 0;
 
-	
 		memset(history, 0, sizeof(int)*3*n);
 		memset(amount_history, 0, sizeof(int)*6*n);
 
@@ -408,10 +429,8 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 	free_dictionary(new_log_subperms);
 	free_dictionary(old_log_subperms);
 
-
 	npy_intp dims[1];
 	dims[0] = S;
-	
 	free(a_union_b);
 	free(alpha);
 	free(beta);
@@ -424,6 +443,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 	free(a);
 	free(b);
 	return(PyArray_SimpleNewFromData(1, dims, NPY_FLOAT64, logperms));
+	//return Py_BuildValue("i", *logperms);
 
 }
 static PyObject *C_get_log_permanents_bioassay(PyObject *self, PyObject *args) {
@@ -437,7 +457,8 @@ static PyObject *C_get_log_permanents_bioassay(PyObject *self, PyObject *args) {
 	int S;
 	int debug;
 
-	if (!PyArg_ParseTuple(args, "O!O!O!O!iii", &PyArray_Type, &Xo,&PyArray_Type, &levelso,&PyArray_Type, &successeso,&PyArray_Type, 
+
+	if (!PyArg_ParseTuple(args, "O!O!O!O!iiii", &PyArray_Type, &Xo,&PyArray_Type, &levelso,&PyArray_Type, &successeso,&PyArray_Type, 
 		&trialso, &n, &num_trials, &S,&debug)){
         return NULL;
   	}
@@ -492,10 +513,14 @@ static PyObject *C_get_log_permanents_bioassay(PyObject *self, PyObject *args) {
   	npy_intp * shapesuccesses = PyArray_SHAPE(successeso);
   	npy_intp * shapelevels = PyArray_SHAPE(levelso);
 
-  	if( (int)shapeX[0] != S || (int)shapeX[1] != n ){
-  		PyErr_SetString(PyExc_ValueError, "X must be S x n");
-  		return NULL;
-  	}
+  	if(S>1){
+	  	if( (int)shapeX[0] != S || (int)shapeX[1] != n ){
+	  		PyErr_SetString(PyExc_ValueError, "X must be S x n");
+	  		return NULL;
+	  	}
+	}else if((int)shapeX[0] != n){
+		PyErr_SetString(PyExc_ValueError, "X must be of length n whenever S=1");
+	}
   	if((int)shapetrials[0] != num_trials){
   		PyErr_SetString(PyExc_ValueError, "trials must have length num_trials");
   	}
@@ -546,6 +571,8 @@ static PyObject *C_get_log_permanents_bioassay(PyObject *self, PyObject *args) {
 		fprintf(stdout,"dim(successes)[0] = %d\n", (int)shapesuccesses[0]);
 		fprintf(stdout,"dim(trials)[0] = %d\n", (int)shapetrials[0]);
 		fprintf(stdout,"dim(levels)[0] = %d\n", (int)shapelevels[0]);
+		fprintf(stdout,"n = %d, num_trials = %d\n",n, num_trials);
+
   		
 
   	}
@@ -585,22 +612,24 @@ static PyObject *C_get_log_permanents_bioassay(PyObject *self, PyObject *args) {
     {
     	succ = successes[j];
     	trial = trials[j];
+    	//printf("succ = %d, trial = %d\n", succ, trial);
 
     	for (int i = 0; i < succ; ++i)
     	{
     		b[totcount] = levels[j];
     		a[totcount++] = -DBL_MAX;
+    		//printf("%d\n", totcount);
     	}
 
     	for (int i = succ; i < trial; ++i)
     	{
     		a[totcount] = levels[j];
     		b[totcount++] = DBL_MAX;
+    		//printf("%d\n", totcount);
     	}
 
 
     }
-
 
 	PyArray_Sort(ao,0,NPY_QUICKSORT);
 	PyArray_Sort(bo,0,NPY_QUICKSORT);
@@ -618,7 +647,11 @@ static PyObject *C_get_log_permanents_bioassay(PyObject *self, PyObject *args) {
     
 
 	
-	PyArray_Sort(Xo, 1, NPY_QUICKSORT);
+	if(S>1){
+		PyArray_Sort(Xo, 1, NPY_QUICKSORT);
+	}else{
+		PyArray_Sort(Xo, 0, NPY_QUICKSORT);
+	}
 
 
 
@@ -692,6 +725,10 @@ static PyObject *C_get_log_permanents_bioassay(PyObject *self, PyObject *args) {
 			logperms[s] = -1;
 			continue;
 		}
+		if((*k)==1){
+				logperms[s] = log_factorials[n];
+				continue;
+			}
 
 
 		
@@ -862,7 +899,7 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
 	int S;
 	int debug;
 
-	if (!PyArg_ParseTuple(args, "O!O!O!iii",&PyArray_Type, &logpermso, &PyArray_Type, &successeso,
+	if (!PyArg_ParseTuple(args, "O!O!O!iiii",&PyArray_Type, &logpermso, &PyArray_Type, &successeso,
 		&PyArray_Type, &trialso, &n, &num_trials, &S,&debug)){
         return NULL;
   	}
@@ -1103,7 +1140,7 @@ static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef permsMethods[] = {
-  {"get_log_permanents", C_get_log_permanents, METH_VARARGS, "get_log_permanents(X, t, y, S, debug)\n\
+  {"get_log_permanents", C_get_log_permanents, METH_VARARGS, "get_log_permanents(X, t, y, n, S, debug)\n\
 \n\
 Computes log permanents \n\
 associated with simulated latent variables.\n\

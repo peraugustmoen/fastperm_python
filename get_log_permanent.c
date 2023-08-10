@@ -1,6 +1,6 @@
 #include "header.h"
 
-static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
+static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 
 	PyArrayObject* Xo; // X (python object)
 	PyArrayObject* to; // t (python object)
@@ -443,7 +443,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 	//return Py_BuildValue("i", *logperms);
 
 }
-static PyObject *C_get_log_permanents_bioassay(PyObject *self, PyObject *args) {
+static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 
 	PyArrayObject* Xo; // X (python object)
 	PyArrayObject* levelso; // X (python object)
@@ -966,17 +966,14 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
   			maxval = logperms[i];
   		}
   	}
-  	double * result = (double*)calloc(1, sizeof(double));
- 	npy_intp dims[1];
-	dims[0] = 1;
-
-	PyObject * output = PyArray_SimpleNewFromData(1, dims, NPY_FLOAT64, result);
+  	double result = 0;
+ 	
 
   	if(maxval<=-1){
-  		*result = -DBL_MAX;
-  		return output;
+  		result = -DBL_MAX;
+  		return PyFloat_FromDouble(result);
   	}
-  	*result = Clog_sum_exp(logperms, S, maxval) - log((double)S);
+  	result = Clog_sum_exp(logperms, S, maxval) - log((double)S);
 
   	// compute log factorials
   	double * log_factorials =(double*) malloc(sizeof(double) * (n+1));
@@ -988,16 +985,16 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
 		log_factorials[i] = log_factorials[i-1] +log((double)(i));
 	}
 
-	*result = *result -log_factorials[n];
+	result = result -log_factorials[n];
   	
   	for (int j = 0; j < num_trials; ++j)
   	{
-  		*result = *result + log_factorials[trials[j]] - log_factorials[successes[j]] - log_factorials[trials[j] - successes[j]];
+  		result = result + log_factorials[trials[j]] - log_factorials[successes[j]] - log_factorials[trials[j] - successes[j]];
   	}
 
 
 
-  	return output;
+  	return PyFloat_FromDouble(result);
 
 }
 
@@ -1053,17 +1050,14 @@ static PyObject *C_get_log_ML(PyObject *self, PyObject *args) {
   			maxval = logperms[i];
   		}
   	}
-  	double * result = (double*)calloc(1, sizeof(double));
- 	npy_intp dims[1];
-	dims[0] = 1;
-
-	PyObject * output = PyArray_SimpleNewFromData(1, dims, NPY_FLOAT64, result);
+  	double result = 0;
+ 	
 
   	if(maxval<=-1){
-  		*result = -DBL_MAX;
-  		return output;
+  		result = -DBL_MAX;
+  		return PyFloat_FromDouble(result);
   	}
-  	*result = Clog_sum_exp(logperms, S, maxval) - log((double)S);
+  	result = Clog_sum_exp(logperms, S, maxval) - log((double)S);
 
   	// compute log factorials
   	double * log_factorials =(double*) malloc(sizeof(double) * (n+1));
@@ -1075,12 +1069,13 @@ static PyObject *C_get_log_ML(PyObject *self, PyObject *args) {
 		log_factorials[i] = log_factorials[i-1] +log((double)(i));
 	}
 
-	*result = *result -log_factorials[n];
+	result = result -log_factorials[n];
   	
 
 
 
-  	return output;
+
+  	return PyFloat_FromDouble(result);
 
 }
 
@@ -1137,7 +1132,7 @@ static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef permsMethods[] = {
-  {"get_log_permanents", C_get_log_permanents, METH_VARARGS, "get_log_permanents(X, t, y, n, S, debug)\n\
+  {"get_log_perms", C_get_log_perms, METH_VARARGS, "get_log_perms(X, t, y, n, S, debug)\n\
 \n\
 Computes log permanents \n\
 associated with simulated latent variables.\n\
@@ -1173,7 +1168,7 @@ S : int\n\
     Number of samples from the\n\
     data model. That is, the number\n\
     of iterations in the estimator.\n\
-debug : boolean\n\
+debug : Boolean\n\
     If true, debug information\n\
     is printed to stdout.\n\
 \n\
@@ -1184,7 +1179,13 @@ ndarray \n\
     each element associated to \n\
     the corresponding row in X.\n\
     A zero valued permanent is indicated\n\
-    by a -1.\n"},
+    by a -1.\n\
+\n\
+References\n\
+----------\n\
+[1] Christensen, D (2023). Inference for Bayesian nonparametric\n\
+models with binary response data via permutation counting. \n\
+Bayesian Analysis, Advance online publication, DOI: 10.1214/22-BA1353.\n"},
   {"log_sum_exp", log_sum_exp, METH_VARARGS, "log_sum_exp(array)\n\
 \n\
 Computes the log sum exp of an array. \n\
@@ -1226,15 +1227,20 @@ S : int\n\
     Number of samples from the\n\
     data model. That is, the number\n\
     of iterations in the estimator.\n\
-debug : boolean\n\
+debug : Boolean\n\
     If true, debug information\n\
     is printed to stdout.\n\
 \n\
 Returns \n\
 ------- \n\
 float \n\
-    The estimated log marginal likelihood.\n"},
-{"get_log_permanents_bioassay", C_get_log_permanents_bioassay, METH_VARARGS, "get_log_permanents_bioassay(X, levels, successes, trials, n, num_trials, S, debug)\n\
+    The estimated log marginal likelihood.\n\
+References\n\
+----------\n\
+[1] Christensen, D (2023). Inference for Bayesian nonparametric\n\
+models with binary response data via permutation counting. \n\
+Bayesian Analysis, Advance online publication, DOI: 10.1214/22-BA1353.\n"},
+{"get_log_perms_bioassay", C_get_log_perms_bioassay, METH_VARARGS, "get_log_perms_bioassay(X, levels, successes, trials, n, num_trials, S, debug)\n\
 \n\
 Computes log permanents associated with simulated latent variables X with\n\
 bioassay data.\n\
@@ -1258,7 +1264,7 @@ levels : ndarray \n\
     the levels at which trials were conducted.\n\
 successes : ndarray \n\
     A flat numpy array of length n and dtype int32\n\
-    contatining the number of successful trials at\n\
+    containing the number of successful trials at\n\
     each level.\n\
 trials : ndarray \n\
     A flat numpy array of length n and dtype int32\n\
@@ -1271,7 +1277,7 @@ S : int\n\
     Number of samples from the\n\
     data model. That is, the number\n\
     of iterations in the estimator.\n\
-debug : boolean\n\
+debug : Boolean\n\
     If true, debug information\n\
     is printed to stdout.\n\
 \n\
@@ -1314,19 +1320,24 @@ S : int\n\
     Number of samples from the\n\
     data model. That is, the number\n\
     of iterations in the estimator.\n\
-debug : boolean\n\
+debug : Boolean\n\
     If true, debug information\n\
     is printed to stdout.\n\
 \n\
 Returns \n\
 ------- \n\
 float \n\
-    The estimated log marginal likelihood.\n"},
+    The estimated log marginal likelihood.\n\
+References\n\
+----------\n\
+[1] Christensen, D (2023). Inference for Bayesian nonparametric\n\
+models with binary response data via permutation counting. \n\
+Bayesian Analysis, Advance online publication, DOI: 10.1214/22-BA1353.\n"},
   {NULL, NULL, 0, NULL}
 };
 
 /*static PyMethodDef permsMethods[] = {
-  {"get_log_permanents", C_get_log_permanents, METH_VARARGS, "get_log_permanents(X, t, y, S, debug)\n\
+  {"get_log_perms", C_get_log_perms, METH_VARARGS, "get_log_perms(X, t, y, S, debug)\n\
 \n\
 Computes log permanents \n\
 associated with simulated latent variables X and \n\

@@ -8,9 +8,9 @@ def main():
         author = 'Dennis Christensen, Per August Jarval Moen',                  
         author_email = 'Dennis.Christensen@ffi.no, pamoen@math.uio.no',      
         url = 'https://github.com/peraugustmoen/perms',  
-        download_url = 'https://github.com/peraugustmoen/fastperm/archive/refs/tags/v_1_5.tar.gz',
+        download_url = 'https://github.com/peraugustmoen/fastperm/archive/refs/tags/v_1_6.tar.gz',
         name="fastperm",
-        version="1.5",
+        version="1.6",
         install_requires=["numpy"],
         include_dirs=[np.get_include()],
         ext_modules=[Extension("perms", ["get_log_permanent.c", "help_functions.c", "get_alphabetagamma.c",\

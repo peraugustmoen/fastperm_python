@@ -280,10 +280,7 @@ static PyObject *C_get_log_permanents(PyObject *self, PyObject *args) {
 
 			get_alphabetagamma(x, n, a, b, a_union_b, len_a_union_b, alpha, 
 		    beta, gamma,  k, m, debug);
-		    if(!nonzero_perm(x, a,  b, n)){
-				logperms[s] = -1;
-				continue;
-			}
+		    
 			if((*k)==1){
 				logperms[s] = log_factorials[n];
 				continue;
@@ -1286,7 +1283,7 @@ ndarray \n\
     the corresponding row in X.\n\
     A zero valued permanent is indicated\n\
     by a -1.\n"},
-{"get_log_ML_bioassay", C_get_log_ML_bioassay, METH_VARARGS, "get_log_ML_bioassay(logperms, successes, trials, n, num_trials S, debug)\n\
+{"get_log_ML_bioassay", C_get_log_ML_bioassay, METH_VARARGS, "get_log_ML_bioassay(logperms, successes, trials, n, num_trials, S, debug)\n\
 \n\
 Computes the log marginal likelihood of bioassay data from the log permanents. \n\
 \n\

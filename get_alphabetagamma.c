@@ -85,6 +85,9 @@ void get_alphabetagamma(double * x, int n, double * a, double * b, double * a_un
 
     for (int i = 0; i < len_a_union_b-1; ++i)
     {
+        if(alpha_counter>= n){
+            break;
+        }
         if(debug){
             printf("a_union_b[%d] = %f\n", i, a_union_b[i]);
 

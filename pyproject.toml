@@ -3,7 +3,7 @@ requires = ["setuptools>=58","numpy"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "perms"
-version = "1.4"
+version = "1.5"
 authors = [
   { name="Dennis Christensen", email="dennis.christensen@ffi.no" },
   { name="Per August Jarval Moen", email="pamoen@math.uio.no" }

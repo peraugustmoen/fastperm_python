@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=58","numpy"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "perms"
+version = "1.8"
+authors = [
+  { name="Dennis Christensen", email="dennis.christensen@ffi.no" },
+  { name="Per August Jarval Moen", email="pamoen@math.uio.no" }
+]
+description = "perms"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/peraugustmoen/perms"

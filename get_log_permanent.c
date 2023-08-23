@@ -517,15 +517,19 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 	  	}
 	}else if((int)shapeX[0] != n){
 		PyErr_SetString(PyExc_ValueError, "X must be of length n whenever S=1");
+		return NULL;
 	}
   	if((int)shapetrials[0] != num_trials){
   		PyErr_SetString(PyExc_ValueError, "trials must have length num_trials");
+  		return NULL;
   	}
   	if((int)shapesuccesses[0] != num_trials){
   		PyErr_SetString(PyExc_ValueError, "successes must have length num_trials");
+  		return NULL;
   	}
   	if((int)shapelevels[0] != num_trials){
   		PyErr_SetString(PyExc_ValueError, "levels must have length num_trials");
+  		return NULL;
   	}
 
   	
@@ -974,7 +978,7 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
   		PyErr_Format(PyExc_RuntimeError,
                  "Error! No non-zero perms in logperms\n"
                  );
-  		return PyFloat_FromDouble(result);
+  		return NULL;
   	}
   	result = Clog_sum_exp(logperms, S, maxval) - log((double)S);
 
@@ -1061,7 +1065,7 @@ static PyObject *C_get_log_ML(PyObject *self, PyObject *args) {
   		PyErr_Format(PyExc_RuntimeError,
                  "Error! No non-zero perms in logperms\n"
                  );
-  		return PyFloat_FromDouble(result);
+  		return NULL;
   	}
   	result = Clog_sum_exp(logperms, S, maxval) - log((double)S);
 

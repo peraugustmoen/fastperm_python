@@ -3,12 +3,12 @@ requires = ["setuptools>=58","numpy"]
 build-backend = "setuptools.build_meta"
 [project]
 name = "perms"
-version = "1.9"
+version = "1.10"
 authors = [
   { name="Dennis Christensen", email="dennis.christensen@ffi.no" },
   { name="Per August Jarval Moen", email="pamoen@math.uio.no" }
 ]
-description = "perms"
+description = "Fast Permutation Computation"
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [

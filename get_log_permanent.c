@@ -10,18 +10,18 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 	int debug;
 	int constant_ts=1;
 
-	if (!PyArg_ParseTuple(args, "O!O!O!iii", &PyArray_Type, &Xo,&PyArray_Type, &to,&PyArray_Type, &yo, &n, &S,&debug)){
+	if (!PyArg_ParseTuple(args, "O!O!O!i", &PyArray_Type, &Xo,&PyArray_Type, &to,&PyArray_Type, &yo, &debug)){
         return NULL;
   	}
 
-  	if(S==1){
-  		constant_ts = 1;
-  	}
-  	if(PyArray_NDIM(Xo)!= 2){
-  		if(S!=1){
-  			PyErr_SetString(PyExc_ValueError, "X must be 2-dimensional whenever S> 1");
-  			return NULL;
-  		}
+  	S = 1;
+  	n = 1;
+
+  	if(PyArray_NDIM(Xo)== 2){
+  		S = 2;
+  	}else if(PyArray_NDIM(Xo)!= 1){
+  		PyErr_SetString(PyExc_ValueError, "X must be either one-dimensional or two-dimensional");
+  		return NULL;
   	}
   	if(!PyArray_ISFLOAT(Xo)){
   		PyErr_SetString(PyExc_ValueError, "X must be of type float");
@@ -56,13 +56,11 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
   	npy_intp * shapey = PyArray_SHAPE(yo);
 
   	if(S>1){
-	  	if( (int)shapeX[0] != S || (int)shapeX[1] != n ){
-	  		PyErr_SetString(PyExc_ValueError, "X must be S x n");
-	  		return NULL;
-	  	}
-	}else if((int)shapeX[0] != n){
-		PyErr_SetString(PyExc_ValueError, "X must be of length n whenever S=1");
-	}
+  		n = (int)shapeX[1];	
+  		S = (int)shapeX[0];
+	}else{
+		n = (int)shapeX[0];	
+	} 
 
   	if ((int)shapey[0] != n)
   		{
@@ -78,7 +76,7 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
   		
   	}else{
   		if( (int)shapet[0] != S || (int)shapet[1] != n ){
-  			PyErr_SetString(PyExc_ValueError, "t must be S x n");
+  			PyErr_SetString(PyExc_ValueError, "t must be S x n when two-dimensional");
   			return NULL;
   		}
   	}
@@ -127,8 +125,8 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
     double *t = PyArray_DATA(to);
     int *y = PyArray_DATA(yo);
 
-    double * a = (double*) calloc(n, sizeof(double));
-    double * b = (double*) calloc(n, sizeof(double));
+    double * a = (double*) PyMem_Calloc(n, sizeof(double));
+    double * b = (double*) PyMem_Calloc(n, sizeof(double));
 
     PyArrayObject* ao;
     PyArrayObject* bo;
@@ -177,11 +175,11 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 
 	
 
-	double * logperms = (double*)  malloc(sizeof(double) * S);
-	memset(logperms, 0, sizeof(double)*S);
+	double * log_perms = (double*)  PyMem_Malloc(sizeof(double) * S);
+	memset(log_perms, 0, sizeof(double)*S);
 
 
-	double * a_union_b = (double*)  malloc(sizeof(double) * 2*n);
+	double * a_union_b = (double*)  PyMem_Malloc(sizeof(double) * 2*n);
 	int len_a_union_b=0;
 	if (constant_ts)
 	{
@@ -194,14 +192,14 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 	
 
 	
-	int * alpha = (int*) malloc(sizeof(int) * n);
-	int * beta = (int*) malloc(sizeof(int) * n);
-	int * gamma = (int*) malloc(sizeof(int) * n);
+	int * alpha = (int*) PyMem_Malloc(sizeof(int) * n);
+	int * beta = (int*) PyMem_Malloc(sizeof(int) * n);
+	int * gamma = (int*) PyMem_Malloc(sizeof(int) * n);
 
 	
-	double * log_factorials =(double*) malloc(sizeof(double) * (n+1));
-	int * m = (int*) malloc(sizeof(int) );
-	int * k = (int*) malloc(sizeof(int) );
+	double * log_factorials =(double*) PyMem_Malloc(sizeof(double) * (n+1));
+	int * m = (int*) PyMem_Malloc(sizeof(int) );
+	int * k = (int*) PyMem_Malloc(sizeof(int) );
 
 
 	dictionary * new_log_subperms = init_dictionary(n);
@@ -223,8 +221,8 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 
 	
 
-	int * history = (int * ) malloc(sizeof(int)*3*n);
-	int * amount_history = (int * ) malloc(sizeof(int)*6*n);
+	int * history = (int * ) PyMem_Malloc(sizeof(int)*3*n);
+	int * amount_history = (int * ) PyMem_Malloc(sizeof(int)*6*n);
 
 	memset(history, 0, sizeof(int)*3*n);
 	memset(amount_history, 0, sizeof(int)*6*n);
@@ -243,11 +241,12 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 			get_alphabetagamma(x, n, a, b, a_union_b, len_a_union_b, alpha, 
 		    beta, gamma,  k, m, debug);
 		    if(!nonzero_perm(x, a,  b, n)){
-				logperms[s] = -1;
+		    	// setting log_perms[s] to python NAN:
+		    	log_perms[s] = NPY_NAN;
 				continue;
 			}
 			if((*k)==1){
-				logperms[s] = log_factorials[n];
+				log_perms[s] = log_factorials[n];
 				continue;
 			}
 		}else{
@@ -269,7 +268,7 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 			PyArray_Sort(bo,0,NPY_QUICKSORT);
 
 			if(!nonzero_perm(x, a,  b, n)){
-				logperms[s] = -1;
+				log_perms[s] = NPY_NAN;
 				continue;
 			}
 			memset(a_union_b, 0, sizeof(double)*2*n);
@@ -282,7 +281,7 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 		    beta, gamma,  k, m, debug);
 		    
 			if((*k)==1){
-				logperms[s] = log_factorials[n];
+				log_perms[s] = log_factorials[n];
 				continue;
 			}
 	   
@@ -414,7 +413,7 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 
 		
 		double logperm =  Csparse_log_sum_exp(the_log_subperms);
-		logperms[s] = logperm;
+		log_perms[s] = logperm;
 		if(debug){
 			fprintf(stdout,"logperm = %f\n", logperm);
 
@@ -428,19 +427,19 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 
 	npy_intp dims[1];
 	dims[0] = S;
-	free(a_union_b);
-	free(alpha);
-	free(beta);
-	free(gamma);
-	free(log_factorials);
-	free(m);
-	free(k);
-	free(history);
-	free(amount_history);
-	free(a);
-	free(b);
-	return(PyArray_SimpleNewFromData(1, dims, NPY_FLOAT64, logperms));
-	//return Py_BuildValue("i", *logperms);
+	PyMem_Free(a_union_b);
+	PyMem_Free(alpha);
+	PyMem_Free(beta);
+	PyMem_Free(gamma);
+	PyMem_Free(log_factorials);
+	PyMem_Free(m);
+	PyMem_Free(k);
+	PyMem_Free(history);
+	PyMem_Free(amount_history);
+	PyMem_Free(a);
+	PyMem_Free(b);
+	return(PyArray_SimpleNewFromData(1, dims, NPY_FLOAT64, log_perms));
+	//return Py_BuildValue("i", *log_perms);
 
 }
 static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
@@ -455,16 +454,16 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 	int debug;
 
 
-	if (!PyArg_ParseTuple(args, "O!O!O!O!iiii", &PyArray_Type, &Xo,&PyArray_Type, &levelso,&PyArray_Type, &successeso,&PyArray_Type, 
-		&trialso, &n, &num_trials, &S,&debug)){
+	if (!PyArg_ParseTuple(args, "O!O!O!O!i", &PyArray_Type, &Xo,&PyArray_Type, &levelso,&PyArray_Type, &successeso,&PyArray_Type, 
+		&trialso,&debug)){
         return NULL;
   	}
 
-  	if(PyArray_NDIM(Xo)!= 2){
-  		if(S!=1){
-  			PyErr_SetString(PyExc_ValueError, "X must be 2-dimensional whenever S> 1 and one-dimensional otherwise");
+  	if(PyArray_NDIM(Xo)== 2){
+  		S = 2;
+  	}else if(PyArray_NDIM(Xo)!= 1){
+  		PyErr_SetString(PyExc_ValueError, "X must be either one or two-dimensional");
   			return NULL;
-  		}
   	}
   	if(!PyArray_ISFLOAT(Xo)){
   		PyErr_SetString(PyExc_ValueError, "X must be of type float");
@@ -511,28 +510,24 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
   	npy_intp * shapelevels = PyArray_SHAPE(levelso);
 
   	if(S>1){
-	  	if( (int)shapeX[0] != S || (int)shapeX[1] != n ){
-	  		PyErr_SetString(PyExc_ValueError, "X must be S x n");
-	  		return NULL;
-	  	}
-	}else if((int)shapeX[0] != n){
-		PyErr_SetString(PyExc_ValueError, "X must be of length n whenever S=1");
-		return NULL;
+	  	S = (int)shapeX[0];
+	  	n = (int)shapeX[1];
+	}else{
+		S = 1;
+		n = (int)shapeX[0];
 	}
+	num_trials = (int)shapelevels[0];
+
   	if((int)shapetrials[0] != num_trials){
-  		PyErr_SetString(PyExc_ValueError, "trials must have length num_trials");
+  		PyErr_SetString(PyExc_ValueError, "trials must have same length as levels");
   		return NULL;
   	}
   	if((int)shapesuccesses[0] != num_trials){
-  		PyErr_SetString(PyExc_ValueError, "successes must have length num_trials");
+  		PyErr_SetString(PyExc_ValueError, "successes must have same length as levels");
   		return NULL;
   	}
-  	if((int)shapelevels[0] != num_trials){
-  		PyErr_SetString(PyExc_ValueError, "levels must have length num_trials");
-  		return NULL;
-  	}
-
   	
+
 
   	if(PyArray_IS_F_CONTIGUOUS(Xo)){
   		if(debug){
@@ -594,8 +589,8 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
     	return NULL;
     }
 
-    double * a = (double*) calloc(n, sizeof(double));
-    double * b = (double*) calloc(n, sizeof(double));
+    double * a = (double*) PyMem_Calloc(n, sizeof(double));
+    double * b = (double*) PyMem_Calloc(n, sizeof(double));
 
     PyArrayObject* ao;
     PyArrayObject* bo;
@@ -658,11 +653,11 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 
 	
 
-	double * logperms = (double*)  malloc(sizeof(double) * S);
-	memset(logperms, 0, sizeof(double)*S);
+	double * log_perms = (double*)  PyMem_Malloc(sizeof(double) * S);
+	memset(log_perms, 0, sizeof(double)*S);
 
 
-	double * a_union_b = (double*)  malloc(sizeof(double) * 2*n);
+	double * a_union_b = (double*)  PyMem_Malloc(sizeof(double) * 2*n);
 	int len_a_union_b=0;
 
 	memset(a_union_b, 0, sizeof(double)*2*n);
@@ -674,14 +669,14 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 	
 
 	
-	int * alpha = (int*) malloc(sizeof(int) * n);
-	int * beta = (int*) malloc(sizeof(int) * n);
-	int * gamma = (int*) malloc(sizeof(int) * n);
+	int * alpha = (int*) PyMem_Malloc(sizeof(int) * n);
+	int * beta = (int*) PyMem_Malloc(sizeof(int) * n);
+	int * gamma = (int*) PyMem_Malloc(sizeof(int) * n);
 
 	
-	double * log_factorials =(double*) malloc(sizeof(double) * (n+1));
-	int * m = (int*) malloc(sizeof(int) );
-	int * k = (int*) malloc(sizeof(int) );
+	double * log_factorials =(double*) PyMem_Malloc(sizeof(double) * (n+1));
+	int * m = (int*) PyMem_Malloc(sizeof(int) );
+	int * k = (int*) PyMem_Malloc(sizeof(int) );
 
 
 	dictionary * new_log_subperms = init_dictionary(n);
@@ -703,8 +698,8 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 
 	
 
-	int * history = (int * ) malloc(sizeof(int)*3*n);
-	int * amount_history = (int * ) malloc(sizeof(int)*6*n);
+	int * history = (int * ) PyMem_Malloc(sizeof(int)*3*n);
+	int * amount_history = (int * ) PyMem_Malloc(sizeof(int)*6*n);
 
 	memset(history, 0, sizeof(int)*3*n);
 	memset(amount_history, 0, sizeof(int)*6*n);
@@ -723,11 +718,11 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 		get_alphabetagamma(x, n, a, b, a_union_b, len_a_union_b, alpha, 
 	    beta, gamma,  k, m, debug);
 	    if(!nonzero_perm(x, a,  b, n)){
-			logperms[s] = -1;
+			log_perms[s] = NPY_NAN;
 			continue;
 		}
 		if((*k)==1){
-				logperms[s] = log_factorials[n];
+				log_perms[s] = log_factorials[n];
 				continue;
 			}
 
@@ -859,7 +854,7 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 
 		
 		double logperm =  Csparse_log_sum_exp(the_log_subperms);
-		logperms[s] = logperm;
+		log_perms[s] = logperm;
 		if(debug){
 			fprintf(stdout,"logperm = %f\n", logperm);
 
@@ -875,18 +870,18 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 	npy_intp dims[1];
 	dims[0] = S;
 	
-	free(a_union_b);
-	free(alpha);
-	free(beta);
-	free(gamma);
-	free(log_factorials);
-	free(m);
-	free(k);
-	free(history);
-	free(amount_history);
-	free(a);
-	free(b);
-	return(PyArray_SimpleNewFromData(1, dims, NPY_FLOAT64, logperms));
+	PyMem_Free(a_union_b);
+	PyMem_Free(alpha);
+	PyMem_Free(beta);
+	PyMem_Free(gamma);
+	PyMem_Free(log_factorials);
+	PyMem_Free(m);
+	PyMem_Free(k);
+	PyMem_Free(history);
+	PyMem_Free(amount_history);
+	PyMem_Free(a);
+	PyMem_Free(b);
+	return(PyArray_SimpleNewFromData(1, dims, NPY_FLOAT64, log_perms));
 
 }
 
@@ -894,14 +889,14 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
 
 	PyArrayObject* successeso; // X (python object)
 	PyArrayObject* trialso; // t (python object)
-	PyArrayObject* logpermso; // y (python object)
+	PyArrayObject* log_permso; // y (python object)
 	int n;
 	int num_trials;
 	int S;
 	int debug;
 
-	if (!PyArg_ParseTuple(args, "O!O!O!iiii",&PyArray_Type, &logpermso, &PyArray_Type, &successeso,
-		&PyArray_Type, &trialso, &n, &num_trials, &S,&debug)){
+	if (!PyArg_ParseTuple(args, "O!O!O!ii",&PyArray_Type, &log_permso, &PyArray_Type, &successeso,
+		&PyArray_Type, &trialso, &n,&debug)){
         return NULL;
   	}
   	if(PyArray_NDIM(trialso)!= 1){
@@ -914,16 +909,16 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
   		return NULL;
   	}
 
-  	if(PyArray_NDIM(logpermso)!= 1){
-		PyErr_SetString(PyExc_ValueError, "logperms must be 1-dimensional");
+  	if(PyArray_NDIM(log_permso)!= 1){
+		PyErr_SetString(PyExc_ValueError, "log_perms must be 1-dimensional");
 		return NULL;
   	}
-  	if(!PyArray_ISFLOAT(logpermso)){
-  		PyErr_SetString(PyExc_ValueError, "logperms must be of type float");
+  	if(!PyArray_ISFLOAT(log_permso)){
+  		PyErr_SetString(PyExc_ValueError, "log_perms must be of type float");
   		return NULL;
   	}
-  	if(PyArray_TYPE(logpermso)!= NPY_DOUBLE){
-  		PyErr_SetString(PyExc_ValueError, "logperms must have dtype numpy.float64");
+  	if(PyArray_TYPE(log_permso)!= NPY_DOUBLE){
+  		PyErr_SetString(PyExc_ValueError, "log_perms must have dtype numpy.float64");
   		return NULL;
   	}
   	if(PyArray_NDIM(successeso)!= 1){
@@ -940,25 +935,22 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
 
   	npy_intp * shapetrials = PyArray_SHAPE(trialso);
   	npy_intp * shapesuccesses = PyArray_SHAPE(successeso);
-  	npy_intp * shapelogperms = PyArray_SHAPE(logpermso);
+  	npy_intp * shapelog_perms = PyArray_SHAPE(log_permso);
 
-  	if( (int)shapetrials[0] != num_trials ){
-  		PyErr_SetString(PyExc_ValueError, "trials must have length num_trials");
-  		return NULL;
-  	}
+  	num_trials = (int)(shapetrials[0]);
+
 
   	if( (int)shapesuccesses[0] != num_trials){
-  		PyErr_SetString(PyExc_ValueError, "successes must have length num_trials");
+  		PyErr_SetString(PyExc_ValueError, "successes must have same length as num_trials");
   		return NULL;
   	}
 
-  	if( (int)shapelogperms[0] != S ){
-  		PyErr_SetString(PyExc_ValueError, "logperms must have length S");
-  		return NULL;
-  	}
+  	S = (int)shapelog_perms[0];
+
+  	
 
   	int *trials = PyArray_DATA(trialso);
-    double *logperms = PyArray_DATA(logpermso);
+    double *log_perms = PyArray_DATA(log_permso);
     int *successes = PyArray_DATA(successeso);
 
 
@@ -966,24 +958,27 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
 
   	for (int i = 0; i < S; ++i)
   	{
-  		if(logperms[i]> maxval){
-  			maxval = logperms[i];
+  		if(!npy_isnan(log_perms[i])){
+  			if(log_perms[i]> maxval){
+  				maxval = log_perms[i];
+  			}
   		}
+  		
   	}
   	double result = 0;
  	
 
   	if(maxval<=-1){
-  		result = -DBL_MAX;
-  		PyErr_Format(PyExc_RuntimeError,
-                 "Error! No non-zero perms in logperms\n"
-                 );
-  		return NULL;
+  		result = NPY_NAN;
+  		//PyErr_Format(PyExc_RuntimeError,
+        //         "Error! No non-zero perms in log_perms\n"
+        //         );
+  		return PyFloat_FromDouble(result);
   	}
-  	result = Clog_sum_exp(logperms, S, maxval) - log((double)S);
+  	result = Clog_sum_exp(log_perms, S, maxval) - log((double)S);
 
   	// compute log factorials
-  	double * log_factorials =(double*) malloc(sizeof(double) * (n+1));
+  	double * log_factorials =(double*) PyMem_Malloc(sizeof(double) * (n+1));
 	memset(log_factorials, 0, sizeof(double)*(n+1));
 
 	log_factorials[0]=0.0;
@@ -999,7 +994,7 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
   		result = result + log_factorials[trials[j]] - log_factorials[successes[j]] - log_factorials[trials[j] - successes[j]];
   	}
 
-  	free(log_factorials);
+  	PyMem_Free(log_factorials);
 
   	return PyFloat_FromDouble(result);
 
@@ -1007,70 +1002,69 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
 
 static PyObject *C_get_log_ML(PyObject *self, PyObject *args) {
 
-	PyArrayObject* logpermso; // y (python object)
+	PyArrayObject* log_permso; // y (python object)
 	int n;
 	int S;
 	int debug;
 
-	if (!PyArg_ParseTuple(args, "O!iii", &PyArray_Type, &logpermso, &n, &S,&debug)){
+	if (!PyArg_ParseTuple(args, "O!ii", &PyArray_Type, &log_permso, &n,&debug)){
         return NULL;
   	}
 
 
-  	if(PyArray_NDIM(logpermso)!= 1){
-		PyErr_SetString(PyExc_ValueError, "logperms must be 1-dimensional");
+  	if(PyArray_NDIM(log_permso)!= 1){
+		PyErr_SetString(PyExc_ValueError, "log_perms must be 1-dimensional");
 		return NULL;
   	}
-  	if(!PyArray_ISFLOAT(logpermso)){
-  		PyErr_SetString(PyExc_ValueError, "logperms must be of type float");
+  	if(!PyArray_ISFLOAT(log_permso)){
+  		PyErr_SetString(PyExc_ValueError, "log_perms must be of type float");
   		return NULL;
   	}
-  	if(PyArray_TYPE(logpermso)!= NPY_DOUBLE){
-  		PyErr_SetString(PyExc_ValueError, "logperms must have dtype numpy.float64");
+  	if(PyArray_TYPE(log_permso)!= NPY_DOUBLE){
+  		PyErr_SetString(PyExc_ValueError, "log_perms must have dtype numpy.float64");
   		return NULL;
   	}
   	
-  	if( PyArray_NDIM(logpermso) != 1 ){
+  	if( PyArray_NDIM(log_permso) != 1 ){
   		
-		PyErr_SetString(PyExc_ValueError, "logperms must be one-dimensional");
+		PyErr_SetString(PyExc_ValueError, "log_perms must be one-dimensional");
 		return NULL;
   		
   	}
   	
 
-  	npy_intp * shapelogperms = PyArray_SHAPE(logpermso);
+  	npy_intp * shapelog_perms = PyArray_SHAPE(log_permso);
 
+  	S = (int)shapelog_perms[0];
 
-  	if( (int)shapelogperms[0] != S ){
-  		PyErr_SetString(PyExc_ValueError, "logperms must have length S");
-  		return NULL;
-  	}
-
-    double *logperms = PyArray_DATA(logpermso);
+    double *log_perms = PyArray_DATA(log_permso);
 
 
   	double maxval = -1;
 
   	for (int i = 0; i < S; ++i)
   	{
-  		if(logperms[i]> maxval){
-  			maxval = logperms[i];
+  		if(!npy_isnan(log_perms[i])){
+  			if(log_perms[i]> maxval){
+  				maxval = log_perms[i];
+  			}
   		}
+  		
   	}
   	double result = 0;
  	
 
   	if(maxval<=-1){
-  		result = -DBL_MAX;
-  		PyErr_Format(PyExc_RuntimeError,
-                 "Error! No non-zero perms in logperms\n"
-                 );
-  		return NULL;
+  		result = NPY_NAN;
+  		//PyErr_Format(PyExc_RuntimeError,
+        //         "Error! No non-zero perms in log_perms\n"
+        //         );
+  		return PyFloat_FromDouble(result);
   	}
-  	result = Clog_sum_exp(logperms, S, maxval) - log((double)S);
+  	result = Clog_sum_exp(log_perms, S, maxval) - log((double)S);
 
   	// compute log factorials
-  	double * log_factorials =(double*) malloc(sizeof(double) * (n+1));
+  	double * log_factorials =(double*) PyMem_Malloc(sizeof(double) * (n+1));
 	memset(log_factorials, 0, sizeof(double)*(n+1));
 
 	log_factorials[0]=0.0;
@@ -1084,7 +1078,7 @@ static PyObject *C_get_log_ML(PyObject *self, PyObject *args) {
 
 
 
-	free(log_factorials);
+	PyMem_Free(log_factorials);
   	return PyFloat_FromDouble(result);
 
 }
@@ -1114,24 +1108,30 @@ static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
     
     // find max
     
-    double maxval = array[0];
+    double maxval = -NPY_INFINITY;
 
-    for (int i = 1; i < totsize; ++i)
+    for (int i = 0; i < totsize; ++i)
     {
+    	if(npy_isnan(array[i])){
+			continue;
+		}
     	if(array[i]>maxval){
     		maxval = array[i];
     	}
     }
 
+    if(maxval == -NPY_INFINITY){
+    	return PyFloat_FromDouble(NPY_NAN);
+    }
     double exp_result = 0;
 
 
 
 	for (int i = 0; i < totsize; ++i)
 	{
-		/*if(array[i]<0){
+		if(npy_isnan(array[i])){
 			continue;
-		}*/
+		}
 
 		exp_result += exp(array[i] - maxval);
 	}
@@ -1142,7 +1142,7 @@ static PyObject *log_sum_exp(PyObject *self, PyObject *args) {
 }
 
 static PyMethodDef permsMethods[] = {
-  {"get_log_perms", C_get_log_perms, METH_VARARGS, "get_log_perms(X, t, y, n, S, debug)\n\
+  {"get_log_perms", C_get_log_perms, METH_VARARGS, "get_log_perms(X, t, y, debug)\n\
 \n\
 Computes log permanents \n\
 associated with simulated latent variables.\n\
@@ -1172,12 +1172,6 @@ y : ndarray\n\
     A flat binary numpy array of length n\n\
     indicating whether x_i<=t_i\n\
     for each i in the observed data.\n\
-n : int\n\
-    Sample size.\n\
-S : int\n\
-    Number of samples from the\n\
-    data model. That is, the number\n\
-    of iterations in the estimator.\n\
 debug : Boolean\n\
     If true, debug information\n\
     is printed to stdout.\n\
@@ -1189,7 +1183,7 @@ ndarray \n\
     each element associated to \n\
     the corresponding row in X.\n\
     A zero valued permanent is indicated\n\
-    by a -1.\n\
+    by a NaN.\n\
 \n\
 References\n\
 ----------\n\
@@ -1203,7 +1197,7 @@ Computes the log sum exp of an array. \n\
 Given input array = [x_1, ..., x_n], returns \n\
 x_* + log(exp(x_1 - x_*) + ... + exp(x_n - x_*)), \n\
 where x_* = max(x_1, ... x_n). Ignores entries\n\
-with value -1, as these correspond to vanishing\n\
+with value NaN, as these correspond to vanishing\n\
 permanents.\n\
 \n\
 Parameters \n\
@@ -1214,11 +1208,11 @@ array : ndarray \n\
 Returns \n\
 ------- \n\
 float \n"},
-{"get_log_ML", C_get_log_ML, METH_VARARGS, "get_log_ML(logperms, n, S, debug)\n\
+{"get_log_ML", C_get_log_ML, METH_VARARGS, "get_log_ML(log_perms, n, debug)\n\
 \n\
 Computes the log marginal likelihood of the data from the log permanents.\n\
 \n\
-Given the computed log permanents logperms, this function\n\
+Given the computed log permanents log_perms, this function\n\
 computes the log marginal likelihood using the formula (2.3)\n\
 in [1]. It is assumed that there are no repeated trials.\n\
 If the data contain repeated trials, then the appropriate log\n\
@@ -1226,17 +1220,13 @@ binomial factor must be added to the output of this function.\n\
 \n\
 Parameters \n\
 ---------- \n\
-logperms : ndarray\n\
+log_perms : ndarray\n\
     A flat numpy array of length n\n\
     containing the computed log permanents,\n\
     where a zero permanent is indicated by \n\
-    a -1.\n\
+    a NaN.\n\
 n : int\n\
     Sample size.\n\
-S : int\n\
-    Number of samples from the\n\
-    data model. That is, the number\n\
-    of iterations in the estimator.\n\
 debug : Boolean\n\
     If true, debug information\n\
     is printed to stdout.\n\
@@ -1250,7 +1240,7 @@ References\n\
 [1] Christensen, D (2023). Inference for Bayesian nonparametric\n\
 models with binary response data via permutation counting. \n\
 Bayesian Analysis, Advance online publication, DOI: 10.1214/22-BA1353.\n"},
-{"get_log_perms_bioassay", C_get_log_perms_bioassay, METH_VARARGS, "get_log_perms_bioassay(X, levels, successes, trials, n, num_trials, S, debug)\n\
+{"get_log_perms_bioassay", C_get_log_perms_bioassay, METH_VARARGS, "get_log_perms_bioassay(X, levels, successes, trials, debug)\n\
 \n\
 Computes log permanents associated with simulated latent variables X with\n\
 bioassay data.\n\
@@ -1279,14 +1269,6 @@ successes : ndarray \n\
 trials : ndarray \n\
     A flat numpy array of length n and dtype int32\n\
     containing the number of trials at each level.\n\
-n : int\n\
-    Sample size.\n\
-num_trials: int\n\
-	Number of different trials.\n\
-S : int\n\
-    Number of samples from the\n\
-    data model. That is, the number\n\
-    of iterations in the estimator.\n\
 debug : Boolean\n\
     If true, debug information\n\
     is printed to stdout.\n\
@@ -1298,23 +1280,23 @@ ndarray \n\
     each element associated to \n\
     the corresponding row in X.\n\
     A zero valued permanent is indicated\n\
-    by a -1.\n"},
-{"get_log_ML_bioassay", C_get_log_ML_bioassay, METH_VARARGS, "get_log_ML_bioassay(logperms, successes, trials, n, num_trials, S, debug)\n\
+    by a NaN.\n"},
+{"get_log_ML_bioassay", C_get_log_ML_bioassay, METH_VARARGS, "get_log_ML_bioassay(log_perms, successes, trials, n, debug)\n\
 \n\
 Computes the log marginal likelihood of bioassay data from the log permanents. \n\
 \n\
-Given the computed log permanents logperms, this function\n\
+Given the computed log permanents log_perms, this function\n\
 computes the log marginal likelihood using the formula (2.3)\n\
 in [1]. It takes care of repeated trials by adding the appropriate\n\
 log binomial factor.\n\
 \n\
 Parameters \n\
 ---------- \n\
-logperms : ndarray\n\
+log_perms : ndarray\n\
     A flat numpy array of length n\n\
     containing the computed log permanents,\n\
     where a zero permanent is indicated by \n\
-    a -1.\n\
+    a NaN.\n\
 successes : ndarray \n\
     A flat numpy array of length n and dtype int32\n\
     contatining the number of successful trials at\n\
@@ -1324,12 +1306,6 @@ trials : ndarray \n\
     containing the number of trials at each level.\n\
 n : int\n\
     Sample size.\n\
-num_trials : int\n\
-    Number of different trials.\n\
-S : int\n\
-    Number of samples from the\n\
-    data model. That is, the number\n\
-    of iterations in the estimator.\n\
 debug : Boolean\n\
     If true, debug information\n\
     is printed to stdout.\n\
@@ -1346,89 +1322,6 @@ Bayesian Analysis, Advance online publication, DOI: 10.1214/22-BA1353.\n"},
   {NULL, NULL, 0, NULL}
 };
 
-/*static PyMethodDef permsMethods[] = {
-  {"get_log_perms", C_get_log_perms, METH_VARARGS, "get_log_perms(X, t, y, S, debug)\n\
-\n\
-Computes log permanents \n\
-associated with simulated latent variables X and \n\
-observed data (t, y).\n\
-\n\
-Each row of the matrix X contains a random sample of size n from\n\
-the data model. The observed data are represented as (t,y),\n\
-where t is the observed values of the covariate and y is\n\
-the vector of indicator variables. The function returns a vector\n\
-of log permanents corresponding to each sample. \n\
-\n\
-Parameters \n\
----------- \n\
-X : ndarray \n\
-    A numpy array of dimension S x n, in \n\
-    which each row contains a sample from \n\
-    the data model. \n\
-t : ndarray\n\
-    A flat numpy array of length n\n\
-    containing the observed values of\n\
-    the covariate.\n\
-y : ndarray\n\
-    A flat binary numpy array of length n\n\
-    indicating whether x_i<=t_i\n\
-    for each i in the observed data.\n\
-n : int\n\
-    Sample size.\n\
-S : int\n\
-    Number of samples from the\n\
-    data model. That is, the number\n\
-    of iterations in the estimator.\n\
-debug : boolean\n\
-    If true, debug information\n\
-    is printed to stdout.\n\
-\n\
-Returns \n\
-------- \n\
-ndarray \n\
-    Numpy array of log permanents,\n\
-    each element associated to \n\
-    the corresponding row in X.\n\
-    A zero valued permanent is indicated\n\
-    by a -1.\n"},
-  {"log_sum_exp", log_sum_exp, METH_VARARGS, "log_sum_exp(array)\n\
-\n\
-Computes the log sum exp of an array. \n\
-\n\
-Given input array = [x_1, ..., x_n], returns \n\
-x_* + log(exp(x_1 - x_*) + ... + exp(x_n - x_*)), \n\
-where x_* = max(x_1, ... x_n). Ignores entries\n\
-with value -1, as these correspond to vanishing\n\
-permanents.\n\
-\n\
-Parameters \n\
----------- \n\
-array : ndarray \n\
-    input array \n\
-\n\
-Returns \n\
-------- \n\
-float \n"},
-{"get_log_ML", C_get_log_ML, METH_VARARGS, "C_get_log_ML(t, y, logperms, n, S, debug)\n\
-\n\
-Computes the log sum exp of an array. \n\
-\n\
-Given input array = [x_1, ..., x_n], returns \n\
-x_* + log(exp(x_1 - x_*) + ... + exp(x_n - x_*)), \n\
-where x_* = max(x_1, ... x_n). Ignores entries\n\
-with value -1, as these correspond to vanishing\n\
-permanents.\n\
-\n\
-Parameters \n\
----------- \n\
-array : ndarray \n\
-    input array \n\
-\n\
-Returns \n\
-------- \n\
-float \n"},
-  {NULL, NULL, 0, NULL}
-};*/
 
 static struct PyModuleDef perms = {
   PyModuleDef_HEAD_INIT,

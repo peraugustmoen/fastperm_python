@@ -467,6 +467,7 @@ XXH_PUBLIC_API XXH_CONSTF unsigned XXH_versionNumber (void);
 *  Common basic types
 ******************************/
 #include <stddef.h>   /* size_t */
+#include <Python.h> /*Added by Per August Moen*/
 /*!
  * @brief Exit code for the streaming API.
  */
@@ -1774,13 +1775,15 @@ static void XXH_free(void* p) { (void)p; }
  * @internal
  * @brief Modify this function to use a different routine than malloc().
  */
-static XXH_MALLOCF void* XXH_malloc(size_t s) { return malloc(s); }
+/*Modified by Per August Moen:*/
+static XXH_MALLOCF void* XXH_malloc(size_t s) { return PyMem_Malloc(s); }
 
 /*!
  * @internal
  * @brief Modify this function to use a different routine than free().
  */
-static void XXH_free(void* p) { free(p); }
+/*Modified by Per August Moen:*/
+static void XXH_free(void* p) { PyMem_Free(p); }
 
 #endif  /* XXH_NO_STDLIB */
 

@@ -15,6 +15,7 @@
 #include <Python.h>
 #define PY_SSIZE_T_CLEAN
 #include <numpy/arrayobject.h>
+#include <numpy/npy_math.h>
 
 #include "xxhash.h"
 #define RATIO 10

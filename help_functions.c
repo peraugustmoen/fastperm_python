@@ -112,12 +112,12 @@ void update_dict(pair p, double value, dictionary * dict){
 dictionary * init_dictionary(size_t init_size){
 	// create dictionary and alloc memory etc
 
-	dictionary * dict = (dictionary *) calloc(1, sizeof(dictionary));
-	(*dict).array = (pair *) calloc(init_size,  sizeof(pair));
+	dictionary * dict = (dictionary *) PyMem_Calloc(1, sizeof(dictionary));
+	(*dict).array = (pair *) PyMem_Calloc(init_size,  sizeof(pair));
 	(*dict).used_len = 0;
 	(*dict).table_size = init_size;
-	(*dict).value_array = (double*) calloc(init_size, sizeof(double));
-	(*dict).table = (int*) calloc(init_size, sizeof(int));
+	(*dict).value_array = (double*) PyMem_Calloc(init_size, sizeof(double));
+	(*dict).table = (int*) PyMem_Calloc(init_size, sizeof(int));
 
 	for (size_t i = 0; i < (*dict).table_size; i++) {
         (*dict).table[i] = -1;  // Initialize all entries to -1 (empty)
@@ -126,39 +126,39 @@ dictionary * init_dictionary(size_t init_size){
 }
 
 void free_dictionary(dictionary * dict){
-	free((*dict).array);
-	free((*dict).value_array);
-	free(dict);
+	PyMem_Free((*dict).array);
+	PyMem_Free((*dict).value_array);
+	PyMem_Free(dict);
 }
 
 void expand_dictionary(dictionary * dict){
 	// expand the size of a dictionary. the function first tries to increase the memory size by
-	// realloc(). this this fails then new memory is allocated. 
+	// PyMem_Realloc(). this this fails then new memory is allocated. 
 
-	pair * newarray = realloc((*dict).array, (size_t) 2*(*dict).table_size*sizeof(pair));
+	pair * newarray = PyMem_Realloc((*dict).array, (size_t) 2*(*dict).table_size*sizeof(pair));
 	if(newarray==NULL){
-		newarray= (pair *) calloc( 2 * ((*dict).table_size),  sizeof(pair));
+		newarray= (pair *) PyMem_Calloc( 2 * ((*dict).table_size),  sizeof(pair));
 		memcpy(newarray, (*dict).array, sizeof(pair)*(*dict).used_len);
-		free((*dict).array);
+		PyMem_Free((*dict).array);
 	}
 	(*dict).array = newarray;
 	
 	
-	double * newvalue_array = (double *) realloc((*dict).value_array, (size_t) 2 * ((*dict).table_size)*sizeof( double));
+	double * newvalue_array = (double *) PyMem_Realloc((*dict).value_array, (size_t) 2 * ((*dict).table_size)*sizeof( double));
 	if(newvalue_array==NULL){
-		newvalue_array= (double *) calloc( 2 * ((*dict).table_size),  sizeof(double));
+		newvalue_array= (double *) PyMem_Calloc( 2 * ((*dict).table_size),  sizeof(double));
 		memcpy(newvalue_array, (*dict).value_array, sizeof(double)*(*dict).used_len);
-		free((*dict).value_array);
+		PyMem_Free((*dict).value_array);
 	}
 		
 	(*dict).value_array = newvalue_array;
 	
 
-	int * newtable = (int *) realloc((*dict).table, (size_t) 2 * ((*dict).table_size) *sizeof(int));
+	int * newtable = (int *) PyMem_Realloc((*dict).table, (size_t) 2 * ((*dict).table_size) *sizeof(int));
 	if(newtable==NULL){
-		newtable= (int *) calloc( 2 * ((*dict).table_size),  sizeof(int));
+		newtable= (int *) PyMem_Calloc( 2 * ((*dict).table_size),  sizeof(int));
 		memcpy(newtable, (*dict).table, sizeof(int)*(*dict).table_size);
-		free((*dict).table);
+		PyMem_Free((*dict).table);
 		
 	}
 	(*dict).table = newtable;
@@ -234,10 +234,10 @@ void print_float_vector(int len,  double * vec) {
 
 double Clog_sum_exp(double * array, int len, double maxval){
 
-	// ignore neg values
+	// ignore NaN and values
 
 	if(maxval<0){
-		return -1;
+		return NPY_NAN;
 	}
 
 	double exp_result = 0;
@@ -246,6 +246,10 @@ double Clog_sum_exp(double * array, int len, double maxval){
 
 	for (int i = 0; i < len; ++i)
 	{
+		if(npy_isnan(array[i])){
+			continue;
+		}
+
 		if(array[i]<0){
 			continue;
 		}
@@ -270,7 +274,7 @@ double Csparse_log_sum_exp(dictionary * dict){
 	}
 
 	if(maxval<0){
-		return -1;
+		return NPY_NAN;
 	}
 
 	double exp_result = 0;

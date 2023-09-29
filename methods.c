@@ -13,7 +13,7 @@ void reverse_tt(double * old_log_subperms, double * new_log_subperms, int amount
 	
 	for (int i = 0; i < (n+1)*(n+1); ++i)
 	{
-		new_log_subperms[i]=-1;
+		new_log_subperms[i]=NPY_NAN;
 	}
 
 	for (int r = amount; r <= alpha[0]; ++r)
@@ -23,8 +23,12 @@ void reverse_tt(double * old_log_subperms, double * new_log_subperms, int amount
 
 		for (int s = 0; s <= alpha[*k-1]; ++s)
 		{
+			if(npy_isnan(old_log_subperms[cord_spec(r-amount,s,(n+1) )])){
+				new_log_subperms[cord_spec(r,s, (n+1))] = NPY_NAN;
+				continue;
+			}
 			if(old_log_subperms[cord_spec(r-amount,s,(n+1) )]<0){
-				new_log_subperms[cord_spec(r,s, (n+1))] = -1;
+				new_log_subperms[cord_spec(r,s, (n+1))] = NPY_NAN;
 				continue;
 			}
 
@@ -54,7 +58,7 @@ void reverse_bt(double * old_log_subperms, double * new_log_subperms, int amount
 
 	for (int i = 0; i < (n+1)*(n+1); ++i)
 	{
-		new_log_subperms[i]=-1;
+		new_log_subperms[i]=NPY_NAN;
 	}
 
 	for (int r = 0; r <= alpha[0]; ++r)
@@ -62,8 +66,13 @@ void reverse_bt(double * old_log_subperms, double * new_log_subperms, int amount
 
 		for (int s = amount; s <= alpha[*k-1]; ++s)
 		{
+			if(npy_isnan(old_log_subperms[cord_spec(r,s-amount, (n+1) )])){
+				new_log_subperms[cord_spec(r,s, (n+1))] = NPY_NAN;
+				continue;
+			}
+
 			if(old_log_subperms[cord_spec(r,s-amount, (n+1))]<0){
-				new_log_subperms[cord_spec(r,s, (n+1))] = -1;
+				new_log_subperms[cord_spec(r,s, (n+1))] = NPY_NAN;
 				continue;
 			}
 			double log_upper = log_factorials[(alpha[(*k)-1] - s + amount)];
@@ -92,7 +101,7 @@ void reverse_bs(double * old_log_subperms, double * new_log_subperms, int amount
 
 	for (int i = 0; i < (n+1)*(n+1); ++i)
 	{
-		new_log_subperms[i]=-1;
+		new_log_subperms[i]=NPY_NAN;
 	}
 
 	////printf("HEIIII\n");
@@ -122,11 +131,16 @@ void reverse_bs(double * old_log_subperms, double * new_log_subperms, int amount
 				if(r == 1 && s == 1){
 
 				}
-
-				if(old_log_subperms[cord_spec(r,l,(n+1))] < 0 ){
-					temp_vec[l-lstart] = -1;
+				if(npy_isnan(old_log_subperms[cord_spec(r,l,(n+1))])){
+					temp_vec[l-lstart] = NPY_NAN;
 					continue;
 				}
+
+				if(old_log_subperms[cord_spec(r,l,(n+1))] < 0 ){
+					temp_vec[l-lstart] = NPY_NAN;
+					continue;
+				}
+				
 
 
 
@@ -183,7 +197,7 @@ void reverse_ts(double * old_log_subperms, double * new_log_subperms, int amount
 
 	for (int i = 0; i < (n+1)*(n+1); ++i)
 	{
-		new_log_subperms[i]=-1;
+		new_log_subperms[i]=NPY_NAN;
 	}
 
 	double log_upper1=0;
@@ -206,10 +220,16 @@ void reverse_ts(double * old_log_subperms, double * new_log_subperms, int amount
 		  lstart = MAX(0, r - amount);
 			for (int l = lstart; l <= r; ++l)
 			{
-				if(old_log_subperms[cord_spec(l,s,(n+1))] < 0 ){
-					temp_vec[l-lstart] = -1;
+				if(npy_isnan(old_log_subperms[cord_spec(l,s,(n+1))])){
+					temp_vec[l-lstart] = NPY_NAN;
 					continue;
 				}
+
+				if(old_log_subperms[cord_spec(l,s,(n+1))] < 0 ){
+					temp_vec[l-lstart] = NPY_NAN;
+					continue;
+				}
+				
 
 
 				log_upper1 = log_factorials[n - alpha[0] - alpha[(*k) -1] - ((*m)   - l - s )];
@@ -256,7 +276,7 @@ void reverse_lm(double * old_log_subperms, double * new_log_subperms, int amount
 
 	for (int i = 0; i < (n+1)*(n+1); ++i)
 	{
-		new_log_subperms[i]=-1;
+		new_log_subperms[i]=NPY_NAN;
 	}
 
 	double log_upper1=0;
@@ -284,8 +304,13 @@ void reverse_lm(double * old_log_subperms, double * new_log_subperms, int amount
 			maxval=-1;
 			for (int l = r; l <= (r+amount2); ++l)
 			{
+				if(npy_isnan(old_log_subperms[cord_spec(l,s,(n+1))])){
+					temp_vec[l-r] = NPY_NAN;
+					continue;
+				}
+
 				if(old_log_subperms[cord_spec(l,s,(n+1))] < 0 ){
-					temp_vec[l-r] = -1;
+					temp_vec[l-r] = NPY_NAN;
 					continue;
 				}
 
@@ -351,7 +376,7 @@ void reverse_rm(double * old_log_subperms, double * new_log_subperms, int amount
 
 	for (int i = 0; i < (n+1)*(n+1); ++i)
 	{
-		new_log_subperms[i]=-1;
+		new_log_subperms[i]=NPY_NAN;
 	}
 
 
@@ -381,9 +406,13 @@ void reverse_rm(double * old_log_subperms, double * new_log_subperms, int amount
 			maxval=-1;
 			for (int l = s; l <= (amount+s); ++l)
 			{
+				if(npy_isnan(old_log_subperms[cord_spec(r,l,(n+1))])){
+					temp_vec[l-s] = NPY_NAN;
+					continue;
+				}
 
 				if(old_log_subperms[cord_spec(r,l,(n+1))] < 0 ){
-					temp_vec[l-s] = -1;
+					temp_vec[l-s] = NPY_NAN;
 					continue;
 				}
 
@@ -446,7 +475,7 @@ void get_reduced_log_subperms(double * new_log_subperms, int * alpha, int * beta
 					+ log_factorials[alpha[1]] - log_factorials[alpha[1]-s];
 				}
 				else{
-					new_log_subperms[cord_spec(r,s,(n+1))] = -1;
+					new_log_subperms[cord_spec(r,s,(n+1))] = NPY_NAN;
 				}
 			}
 		}
@@ -460,7 +489,7 @@ void get_reduced_log_subperms(double * new_log_subperms, int * alpha, int * beta
 			for (int s = 0; s < (n+1); ++s)
 			{
 				
-				new_log_subperms[cord_spec(r,s,(n+1))] = -1;
+				new_log_subperms[cord_spec(r,s,(n+1))] = NPY_NAN;
 				
 			}
 		}
@@ -475,7 +504,7 @@ void get_reduced_log_subperms(double * new_log_subperms, int * alpha, int * beta
 			for (int s = 0; s < (n+1); ++s)
 			{
 				
-				new_log_subperms[cord_spec(r,s,(n+1))] = -1;
+				new_log_subperms[cord_spec(r,s,(n+1))] = NPY_NAN;
 				
 			}
 		}
@@ -489,7 +518,7 @@ void get_reduced_log_subperms(double * new_log_subperms, int * alpha, int * beta
 			for (int s = 0; s < (n+1); ++s)
 			{
 				
-				new_log_subperms[cord_spec(r,s,(n+1))] = -1;
+				new_log_subperms[cord_spec(r,s,(n+1))] = NPY_NAN;
 				
 			}
 		}

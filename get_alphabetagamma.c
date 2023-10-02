@@ -1,7 +1,6 @@
 #include "header.h"
 
 
-
 void get_union(int n, double * a, double * b, int * len_a_union_b, double * a_union_b){
 
     int counter =0;

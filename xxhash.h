@@ -1776,14 +1776,14 @@ static void XXH_free(void* p) { (void)p; }
  * @brief Modify this function to use a different routine than malloc().
  */
 /*Modified by Per August Moen:*/
-static XXH_MALLOCF void* XXH_malloc(size_t s) { return PyMem_Malloc(s); }
+static XXH_MALLOCF void* XXH_malloc(size_t s) { return PyMem_RawMalloc(s); }
 
 /*!
  * @internal
  * @brief Modify this function to use a different routine than free().
  */
 /*Modified by Per August Moen:*/
-static void XXH_free(void* p) { PyMem_Free(p); }
+static void XXH_free(void* p) { PyMem_RawFree(p); }
 
 #endif  /* XXH_NO_STDLIB */
 

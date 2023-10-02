@@ -9,7 +9,7 @@ size_t hash(pair p, int table_size) {
 
     // apply xxhash:
     XXH64_hash_t hash = XXH64(t, sizeof(int)*2, 1337);
- 
+ 	//int hash = t[0] * 11113 + t[1]*13999;
     return( hash % table_size);
 
 }
@@ -112,12 +112,12 @@ void update_dict(pair p, double value, dictionary * dict){
 dictionary * init_dictionary(size_t init_size){
 	// create dictionary and alloc memory etc
 
-	dictionary * dict = (dictionary *) PyMem_Calloc(1, sizeof(dictionary));
-	(*dict).array = (pair *) PyMem_Calloc(init_size,  sizeof(pair));
+	dictionary * dict = (dictionary *) PyMem_RawCalloc(1, sizeof(dictionary));
+	(*dict).array = (pair *) PyMem_RawCalloc(init_size,  sizeof(pair));
 	(*dict).used_len = 0;
 	(*dict).table_size = init_size;
-	(*dict).value_array = (double*) PyMem_Calloc(init_size, sizeof(double));
-	(*dict).table = (int*) PyMem_Calloc(init_size, sizeof(int));
+	(*dict).value_array = (double*) PyMem_RawCalloc(init_size, sizeof(double));
+	(*dict).table = (int*) PyMem_RawCalloc(init_size, sizeof(int));
 
 	for (size_t i = 0; i < (*dict).table_size; i++) {
         (*dict).table[i] = -1;  // Initialize all entries to -1 (empty)
@@ -126,39 +126,44 @@ dictionary * init_dictionary(size_t init_size){
 }
 
 void free_dictionary(dictionary * dict){
-	PyMem_Free((*dict).array);
-	PyMem_Free((*dict).value_array);
-	PyMem_Free(dict);
+	PyMem_RawFree((*dict).array);
+	PyMem_RawFree((*dict).table);
+	PyMem_RawFree((*dict).value_array);
+	PyMem_RawFree(dict);
 }
 
 void expand_dictionary(dictionary * dict){
 	// expand the size of a dictionary. the function first tries to increase the memory size by
-	// PyMem_Realloc(). this this fails then new memory is allocated. 
+	// PyMem_RawRealloc(). this this fails then new memory is allocated. 
+	/*printf("expanding dictionary\n");
+	printf("old size = %d\n", (*dict).table_size);
+	printf("new size = %d\n", 2*(*dict).table_size);*/
 
-	pair * newarray = PyMem_Realloc((*dict).array, (size_t) 2*(*dict).table_size*sizeof(pair));
+	pair * newarray = PyMem_RawRealloc((*dict).array, (size_t) 2*(*dict).table_size*sizeof(pair));
 	if(newarray==NULL){
-		newarray= (pair *) PyMem_Calloc( 2 * ((*dict).table_size),  sizeof(pair));
+		printf("realloc failed\n");
+		newarray= (pair *) PyMem_RawCalloc( 2 * ((*dict).table_size),  sizeof(pair));
 		memcpy(newarray, (*dict).array, sizeof(pair)*(*dict).used_len);
-		PyMem_Free((*dict).array);
+		PyMem_RawFree((*dict).array);
 	}
 	(*dict).array = newarray;
 	
 	
-	double * newvalue_array = (double *) PyMem_Realloc((*dict).value_array, (size_t) 2 * ((*dict).table_size)*sizeof( double));
+	double * newvalue_array = (double *) PyMem_RawRealloc((*dict).value_array, (size_t) 2 * ((*dict).table_size)*sizeof( double));
 	if(newvalue_array==NULL){
-		newvalue_array= (double *) PyMem_Calloc( 2 * ((*dict).table_size),  sizeof(double));
+		newvalue_array= (double *) PyMem_RawCalloc( 2 * ((*dict).table_size),  sizeof(double));
 		memcpy(newvalue_array, (*dict).value_array, sizeof(double)*(*dict).used_len);
-		PyMem_Free((*dict).value_array);
+		PyMem_RawFree((*dict).value_array);
 	}
 		
 	(*dict).value_array = newvalue_array;
 	
 
-	int * newtable = (int *) PyMem_Realloc((*dict).table, (size_t) 2 * ((*dict).table_size) *sizeof(int));
+	int * newtable = (int *) PyMem_RawRealloc((*dict).table, (size_t) 2 * ((*dict).table_size) *sizeof(int));
 	if(newtable==NULL){
-		newtable= (int *) PyMem_Calloc( 2 * ((*dict).table_size),  sizeof(int));
+		newtable= (int *) PyMem_RawCalloc( 2 * ((*dict).table_size),  sizeof(int));
 		memcpy(newtable, (*dict).table, sizeof(int)*(*dict).table_size);
-		PyMem_Free((*dict).table);
+		PyMem_RawFree((*dict).table);
 		
 	}
 	(*dict).table = newtable;

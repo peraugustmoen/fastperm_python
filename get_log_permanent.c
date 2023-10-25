@@ -102,9 +102,7 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
   	}
   	
 
-    /*double *X = PyArray_DATA(Xo);
-    double *t = PyArray_DATA(to);
-    int *y = PyArray_DATA(yo);*/
+   
 
     PyArrayObject* Xo_new; // X (python object)
 	PyArrayObject* to_new;
@@ -121,7 +119,11 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
   			fprintf(stdout,"Fortran style memory layout detected. Transforming X to C style.\n");
   		}
   		xcopied = 1;
-  		X = (double*) PyMem_RawCalloc(n*S,sizeof(double));
+  		npy_intp dims[2];
+		dims[0] = S;
+		dims[1] = n;
+  		Xo_new = (PyArrayObject*) PyArray_SimpleNew(2, dims, NPY_DOUBLE);
+  		X = (double*) PyArray_DATA(Xo_new);
   		double * X_old = PyArray_DATA(Xo);
 
   		// copy X_old into X_new, but with C style memory layout instead of fortran:
@@ -132,36 +134,23 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
   				X[j + i*n] = X_old[i + j*S];
   			}
   		}
-  		npy_intp dimz[2];
-		dimz[0] = S;
-		dimz[1] = n;
-  		Xo_new = PyArray_SimpleNewFromData(2, dimz, NPY_FLOAT64, X);
-  		//printf("HEI\n");
-  		/*printf("%f\n", X[0]);
-  		printf("%f\n", X_old[0]);*/
-
-
-
-
-  		//PyArrayObject* Xo_new = (PyArrayObject *)PyArray_CastToType(Xo, PyArray_DESCR(Xo), 0);
-  		//Py_DECREF(Xo_new);
-  		//PyDataMem_FREE(Xo_new);
-
-  		//Xo = Xo_new;
+  		
   	}else{
-  		//printf("IKKEHEI\n");
-  		//printf("X is C\n");
   		X = PyArray_DATA(Xo);
   		Xo_new = Xo;
   	}
-  	//printf("X[0,0] = %f\n", X[0]);
   	if((!constant_ts) && PyArray_IS_F_CONTIGUOUS(to)){
   		//printf("t is fortran\n");
   		if(debug){
   			fprintf(stdout,"Fortran style memory layout detected. Transforming t to C style.\n");
   		}
   		tcopied = 1;
-  		t = (double*) PyMem_RawCalloc(n*S,sizeof(double));
+  		npy_intp dims[2];
+		dims[0] = S;
+		dims[1] = n;
+  		to_new = (PyArrayObject*)PyArray_SimpleNew(2, dims, NPY_DOUBLE);
+
+  		t = (double*) PyArray_DATA(to_new);
   		double * t_old = PyArray_DATA(to);
 
   		// copy t_old into t, but with C style memory layout instead of fortran:
@@ -173,41 +162,28 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
   			}
   		}
 
-  		//printf("HEI\n");
-  		/*printf("%f\n", t[0]);
-  		printf("%f\n", t_old[0]);*/
-
-
-  		npy_intp dimz[2];
-		dimz[0] = S;
-		dimz[1] = n;
-  		to_new = PyArray_SimpleNewFromData(2, dimz, NPY_FLOAT64,t);
-
-
-  		//PyArrayObject* to_new = (PyArrayObject *)PyArray_CastToType(to, PyArray_DESCR(to), 0);
-  		//Py_DECREF(to_new);
-  		//PyDataMem_FREE(to_new);
-  		//to = to_new;
   	}else{
   		t = PyArray_DATA(to);
   		to_new = to;
-  		//printf("t is C\n");
   	}
     
     
 
 
-    double * a = (double*) PyMem_RawCalloc(n, sizeof(double));
-    double * b = (double*) PyMem_RawCalloc(n, sizeof(double));
+ 
+   
 
-    PyArrayObject* ao;
-    PyArrayObject* bo;
+    npy_intp dims[1];
+	dims[0] = n;
 
-    npy_intp dimss[1];
-	dimss[0] = n;
+
+    PyArrayObject* ao = (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+    PyArrayObject* bo = (PyArrayObject *)PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+    double * a = (double*) PyArray_DATA(ao);
+    double * b = (double*) PyArray_DATA(bo);
+    
     if (constant_ts)
     {
-
 	    for (int i = 0; i < n; ++i)
 	    {
 	    	if(y[i]==1){
@@ -220,25 +196,10 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 	    	}
 	    }
 
-    	ao = PyArray_SimpleNewFromData(1, dimss, NPY_FLOAT64, a);
-    	bo = PyArray_SimpleNewFromData(1, dimss, NPY_FLOAT64, b);
     	PyArray_Sort(ao,0,NPY_QUICKSORT);
 		PyArray_Sort(bo,0,NPY_QUICKSORT);
-		/*printf("a:\n");
-		for (int i = 0; i < n; ++i)
-		{
-			printf("%f\n", a[i]);
-		}
-		printf("b:\n");
-		for (int i = 0; i < n; ++i)
-		{
-			printf("%f\n", b[i]);
-		}*/
-    }else{
-    	ao = PyArray_SimpleNewFromData(1, dimss, NPY_FLOAT64, a);
-	    bo = PyArray_SimpleNewFromData(1, dimss, NPY_FLOAT64, b);
-    }
-    
+		
+	}
 
 	if(S>1){
 		PyArray_Sort(Xo_new, 1, NPY_QUICKSORT);
@@ -248,19 +209,6 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 
 	
 
-	/*npy_intp dimz[1];
-	dimz[0] = 2;
-	double *hh = PyMem_RawMalloc(sizeof(double)*2);
-	*hh = 1;
-	if(xcopied){
-		PyMem_RawFree(X);
-	}if(tcopied){
-		PyMem_RawFree(t);
-
-	}
-	PyMem_RawFree(a);
-	PyMem_RawFree(b);
-	return(PyArray_SimpleNewFromData(1, dimz, NPY_FLOAT64, hh));*/
 
 	double * log_perms = (double*)  PyMem_RawMalloc(sizeof(double) * S);
 	memset(log_perms, 0, sizeof(double)*S);
@@ -498,14 +446,12 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 
 
 		double logperm =  Csparse_log_sum_exp(the_log_subperms);
-		//printf("logperm: %f\n",logperm);
 		log_perms[s] = logperm;
 		if(debug){
 			fprintf(stdout,"logperm = %f\n", logperm);
 
 		}
 
-		
 
 
 
@@ -515,12 +461,9 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 	free_dictionary(new_log_subperms);
 	free_dictionary(old_log_subperms);
 
-	npy_intp dims[1];
-	dims[0] = S;
+	npy_intp dims_ret[1];
+	dims_ret[0] = S;
 
-
-
-	//printf("HH: %d\n", Py_REFCNT(ao));
 	Py_DECREF(ao);
 	Py_DECREF(bo);
 	PyMem_RawFree(a_union_b);
@@ -532,17 +475,13 @@ static PyObject *C_get_log_perms(PyObject *self, PyObject *args) {
 	PyMem_RawFree(k);
 	PyMem_RawFree(history);
 	PyMem_RawFree(amount_history);
-	PyMem_RawFree(a);
-	PyMem_RawFree(b);
+	
 	if(xcopied){
-		PyMem_RawFree(X);
 		Py_DECREF(Xo_new);
 	}if(tcopied){
-		PyMem_RawFree(t);
 		Py_DECREF(to_new);
 	}
-	return(PyArray_SimpleNewFromData(1, dims, NPY_FLOAT64, log_perms));
-	//return Py_BuildValue("i", *log_perms);
+	return(PyArray_SimpleNewFromData(1, dims_ret, NPY_FLOAT64, log_perms));
 
 }
 static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
@@ -640,9 +579,7 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
     int *trials = PyArray_DATA(trialso);
     int *successes = PyArray_DATA(successeso);
 
-    double * t = (double* ) PyMem_RawCalloc(n, sizeof(double));
-    int * y = (int * ) PyMem_RawCalloc(n, sizeof(int));
-
+    
     int count = 0;
     for (int j = 0; j < num_trials; ++j)
     {
@@ -655,8 +592,11 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 
     npy_intp dimss[1];
 	dimss[0] = n;
-	PyObject * yo = PyArray_SimpleNewFromData(1, dimss, NPY_INT32, y);
-	PyObject * to = PyArray_SimpleNewFromData(1, dimss, NPY_FLOAT64, t);
+	PyObject * yo = PyArray_SimpleNew(1, dimss, NPY_INT32);
+	PyObject * to = PyArray_SimpleNew(1, dimss, NPY_FLOAT64);
+	double * t = (double*) PyArray_DATA(to);
+	int * y = (int*) PyArray_DATA(yo);
+	
 
 	int succ=0;
 	int trial=0;
@@ -684,18 +624,12 @@ static PyObject *C_get_log_perms_bioassay(PyObject *self, PyObject *args) {
 
 
     }
-    //int typ1=PyArray_TYPE(Xo);
-    //int typ2=PyArray_TYPE(to);
-    //int typ3=PyArray_TYPE(yo);
-    //PyObject* argz = Py_BuildValue("O!O!O!i", &PyArray_Type, Xo, &PyArray_Type,to, &PyArray_Type,yo, &debug);
+    
     PyObject* argz = PyTuple_Pack(4, Xo, to, yo, Py_BuildValue("i", debug));
     PyObject* result = C_get_log_perms(self, argz);
     Py_XDECREF(argz);
-
-    PyMem_RawFree(y);
-    PyMem_RawFree(t);
-    Py_DECREF(yo);
-    Py_DECREF(to);
+    Py_XDECREF(yo);
+    Py_XDECREF(to);
 
 
 	return(result);
@@ -722,7 +656,7 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
   	}
 
   	if(PyArray_TYPE(trialso)!= NPY_INT32){
-  		PyErr_SetString(PyExc_ValueError, "trials must have dtype numpy.int32");
+  		PyErr_SetString(PyExc_ValueError, "trials must have dtype np.int32");
   		return NULL;
   	}
 
@@ -787,9 +721,6 @@ static PyObject *C_get_log_ML_bioassay(PyObject *self, PyObject *args) {
 
   	if(maxval<=-1){
   		result = NPY_NAN;
-  		//PyErr_Format(PyExc_RuntimeError,
-        //         "Error! No non-zero perms in log_perms\n"
-        //         );
   		return PyFloat_FromDouble(result);
   	}
   	result = Clog_sum_exp(log_perms, S, maxval) - log((double)S);
@@ -873,9 +804,6 @@ static PyObject *C_get_log_ML(PyObject *self, PyObject *args) {
 
   	if(maxval<=-1){
   		result = NPY_NAN;
-  		//PyErr_Format(PyExc_RuntimeError,
-        //         "Error! No non-zero perms in log_perms\n"
-        //         );
   		return PyFloat_FromDouble(result);
   	}
   	result = Clog_sum_exp(log_perms, S, maxval) - log((double)S);
@@ -1143,7 +1071,7 @@ Bayesian Analysis, Advance online publication, DOI: 10.1214/22-BA1353.\n"},
 static struct PyModuleDef perms = {
   PyModuleDef_HEAD_INIT,
   "perms",
-  "Module for computing permanents of block rectangular matrices",
+  "Module for computing marginal likelihoods using permutation counting",
   -1,
   permsMethods
 };
